@@ -61,9 +61,9 @@ tasks:
     cmds:
     - |
       if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then
-        docker run --rm --volume "{{.REPO_ABS_ROOT_PATH}}:/work" zricethezav/gitleaks:latest detect --report-format "sarif" --report-path gitleaks-report.sarif --redact --source="/work" --config /work/.security/credscan-config.toml
+        docker run --rm --volume "{{.REPO_ABS_ROOT_PATH}}:/work" zricethezav/gitleaks:latest detect -v --redact --report-format "sarif" --report-path gitleaks-report.sarif --source="/work" --config /work/.security/credscan-config.toml
       else
-        docker run --rm --volume "{{.REPO_ABS_ROOT_PATH}}:/work" zricethezav/gitleaks:latest detect --redact --source="/work" --config /work/.security/credscan-config.toml
+        docker run --rm --volume "{{.REPO_ABS_ROOT_PATH}}:/work" zricethezav/gitleaks:latest detect -v --redact --source="/work" --config /work/.security/credscan-config.toml
       fi
     silent: true
 

@@ -11,7 +11,7 @@ vars:
   BUILD_VERSION:
     sh: |
       curl -s "https://api.github.com/repos/{{.DOCKERIZED_BINARY_REPO}}/releases/latest" | grep "tag_name" | cut -d '"' -f4
-  GHCR_USERNAME: 'crazy-matt'
+  GHCR_USERNAME: 'crazy-matt'  # scan:ignore
   GIT_REPO:
     sh: git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##'
   GIT_REPO_LATEST_RELEASE:
@@ -133,12 +133,12 @@ tasks:
     desc: Run all security scanners
     deps: [dependencies]
     cmds:
-    - task: security:image:docker-scan
+    - task: security:image:snyk
     - task: security:image:dockle
     - task: security:image:trivy
     silent: true
 
-  security:image:docker-scan:
+  security:image:snyk:
     desc: Run Snyk tests
     deps: [build]
     cmds:

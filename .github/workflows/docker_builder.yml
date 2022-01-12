@@ -58,6 +58,8 @@ jobs:
         run: |
           task docker:security -- sarfif
           task security -- sarfif
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: 'Upload SARIF reports'
         if: always()
         uses: github/codeql-action/upload-sarif@v1.0.26
