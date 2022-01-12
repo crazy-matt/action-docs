@@ -44,6 +44,7 @@ jobs:
         id: test
         run: |
           which hadolint
+          hadolint --version
           task docker:test
           task lint
         env:
