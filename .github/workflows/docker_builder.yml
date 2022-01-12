@@ -36,6 +36,7 @@ jobs:
       - name: 'Install Task'
         uses: arduino/setup-task@v1.0.0
         with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ steps.vars.outputs.task_version }}
       - name: 'Test'
         id: test
@@ -60,6 +61,7 @@ jobs:
       - name: 'Install Task'
         uses: arduino/setup-task@v1.0.0
         with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ steps.vars.outputs.task_version }}
       - name: 'Scan for Vulnerabilities'
         id: scan
@@ -123,6 +125,7 @@ jobs:
       - name: 'Install Task'
         uses: arduino/setup-task@v1.0.0
         with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ steps.vars.outputs.task_version }}
       - name: 'Docker Push'
         run: |
