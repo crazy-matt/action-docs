@@ -93,13 +93,13 @@ jobs:
         run: |
           if [[ "${{ steps.scan.outcome }}" == "success" ]]; then
             echo "::set-output name=status::passing"
-            echo "::set-output name=color::YellowGreen"
+            echo "::set-output name=color::yellowgreen"
           else
             echo "::set-output name=status::failed"
             echo "::set-output name=color::Red"
           fi
-          echo "::set-output name=icon::https://fonts.gstatic.com/s/i/materialicons/security/v12/24px.svg"
-          echo "::set-output name=label::Vulnerability"
+          echo "::set-output name=icon::data:image/svg+xml;base64,PHN2ZyBpZD0ic2hpZWxkIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLnZpLXByaW1hcnkgewogICAgICAgIGZpbGw6ICNmZmI0MDA7CiAgICAgIH0KCiAgICAgIC52aS1wcmltYXJ5LCAudmktYWNjZW50IHsKICAgICAgICBzdHJva2U6ICNmZmY7CiAgICAgICAgc3Ryb2tlLWxpbmVjYXA6IHJvdW5kOwogICAgICAgIHN0cm9rZS13aWR0aDogMDsKICAgICAgICBmaWxsLXJ1bGU6IGV2ZW5vZGQ7CiAgICAgIH0KCiAgICAgIC52aS1hY2NlbnQgewogICAgICAgIGZpbGw6ICMwNzBjMmI7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxwYXRoIGNsYXNzPSJ2aS1wcmltYXJ5IiBkPSJNMjQuNTE2LDQxQzguNTg2LDM0LjgyOCwxMC4wMzIsMTMuOCwxMC4wMzIsMTMuOCwxOS42NzUsMTUuNTc4LDI0LjUxNiw3LDI0LjUxNiw3czQuODMsOC41NzgsMTQuNDUyLDYuOEMzOC45NjgsMTMuOCw0MC40MTEsMzQuODI4LDI0LjUxNiw0MVoiLz4KICA8cGF0aCBjbGFzcz0idmktYWNjZW50IiBkPSJNMTcsMjVsNSw1TDMyLDIwbC0yLTItOCw4LTMtM1oiLz4KPC9zdmc+Cg=="
+          echo "::set-output name=label::Vulnerabilities"
           echo "::set-output name=label-color::555"
           echo "::set-output name=path::vulnerability.svg"
       - name: 'Update badges'
