@@ -33,17 +33,15 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=task_version::$(cat ${{ github.workspace }}/.tool-versions | grep -w task | cut -d ' ' -f2)"
+      - name: 'Install asdf'
+        uses: asdf-vm/actions/install@v1
       - name: 'Install Task'
         uses: arduino/setup-task@v1
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ steps.vars.outputs.task_version }}
       - name: 'Test'
         id: test
         run: |
-          ls -lna / || true
-          ls -lna /usr/bin | grep task || true
-          ls -lna /usr/local/bin | grep task || true
           task docker:test
           task test
   vulnerability_scanner:
@@ -61,10 +59,11 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=task_version::$(cat ${{ github.workspace }}/.tool-versions | grep -w task | cut -d ' ' -f2)"
+      - name: 'Install asdf'
+        uses: asdf-vm/actions/install@v1
       - name: 'Install Task'
         uses: arduino/setup-task@v1
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ steps.vars.outputs.task_version }}
       - name: 'Scan for Vulnerabilities'
         id: scan
@@ -125,10 +124,11 @@ jobs:
           else
             echo "::set-output name=force_release::false"
           fi
+      - name: 'Install asdf'
+        uses: asdf-vm/actions/install@v1
       - name: 'Install Task'
         uses: arduino/setup-task@v1
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ steps.vars.outputs.task_version }}
       - name: 'Docker Push'
         run: |
