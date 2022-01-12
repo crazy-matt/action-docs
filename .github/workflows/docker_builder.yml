@@ -30,6 +30,7 @@ jobs:
       - name: 'Set Job Vars'
         id: vars
         run: |
+          ls -lna ${{ github.workspace }}
           echo "::set-output name=task_version::$(cat ${{ github.workspace }}/.tool-versions | grep -w task | cut -d ' ' -f2)"
       - name: 'Install Task'
         uses: arduino/setup-task@v1.0.0
