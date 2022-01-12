@@ -110,7 +110,6 @@ jobs:
           else
             echo "::set-output name=force_release::false"
           fi
-          echo "::set-output name=container_registry_url::https://github.com/${GITHUB_REPOSITORY}/pkgs/container/${GITHUB_REPOSITORY#*/}"
       - name: 'Install Task'
         uses: arduino/setup-task@v1.0.0
         with:
@@ -126,4 +125,4 @@ jobs:
         with:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
           event-type: slack-notification
-          client-payload: '{ "type": "build", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "color": "#2EB67D", "title": "📦 ${{ github.repository }} New Image", "message": "Check-out '${{ steps.vars.outputs.container_registry_url }}'" }'
+          client-payload: '{ "type": "build", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "color": "#2EB67D", "title": "📦 ${{ github.repository }} New Image", "message": "Check-out https://github.com/${GITHUB_REPOSITORY}/pkgs/container/${GITHUB_REPOSITORY#*/}" }'
