@@ -41,6 +41,10 @@ jobs:
       - name: 'Test'
         id: test
         run: |
+          ls -lna /
+          ls -lna /bin | grep task
+          ls -lna /usr/bin | grep task
+          ls -lna /usr/local/bin | grep task
           task docker:test
           task test
   vulnerability_scanner:
@@ -129,10 +133,6 @@ jobs:
           version: ${{ steps.vars.outputs.task_version }}
       - name: 'Docker Push'
         run: |
-          ls -lna /
-          ls -lna /bin | grep task
-          ls -lna /usr/bin | grep task
-          ls -lna /usr/local/bin | grep task
           task docker:push
         env:
           GHCR_TOKEN: ${{ secrets.CI_GH_PAT_CONTAINER_REGISTRY_AUTH }}
