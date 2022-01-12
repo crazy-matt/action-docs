@@ -44,6 +44,8 @@ jobs:
         run: |
           task docker:test
           task test
+        env:
+          GHCR_TOKEN: ${{ secrets.CI_GH_PAT_CONTAINER_REGISTRY_AUTH }}
   vulnerability_scanner:
     name: 'Vulnerability Scan'
     runs-on: ubuntu-latest

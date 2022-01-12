@@ -70,7 +70,7 @@ tasks:
         --build-arg GIT_REPO_HTTP_URL="{{.GIT_REPO_HTTP_URL}}" \
         --build-arg GIT_SHORT_SHA="{{.GIT_SHORT_SHA}}" \
         .
-      echo "📦 Image built"
+    - echo "📦 Image built"
     env:
       DOCKER_BUILDKIT: 1
     sources:
@@ -82,6 +82,7 @@ tasks:
     desc: Test Docker image
     deps: [build]
     cmds:
+    - echo "${GHCR_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
     - |
       docker run -t --rm \
         -v /var/run/docker.sock:/var/run/docker.sock \
@@ -90,7 +91,10 @@ tasks:
         -e "IMAGE_NAME={{.DOCKER_IMAGE_NAME}}" \
         ghcr.io/crazy-matt/bats-action:latest \
         tests/action-docs.bats
-      echo "📦 Image validated"
+    - echo "📦 Image validated"
+    preconditions:
+    - sh: '[ -n "${GHCR_TOKEN}" ]'
+      msg: 'You need to export a GitHub Token with "write package" permission as an environment variable GHCR_TOKEN'
     silent: true
 
   push:
