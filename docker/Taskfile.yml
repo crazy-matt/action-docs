@@ -83,7 +83,7 @@ tasks:
     deps: [build]
     cmds:
     - |
-      docker run -it --rm \
+      docker run -t --rm \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v {{.REPO_ABS_ROOT_PATH}}:/work \
         -e "BUILD_VERSION={{.BUILD_VERSION}}" \
