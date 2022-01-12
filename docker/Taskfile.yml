@@ -13,7 +13,7 @@ vars:
       curl -s "https://api.github.com/repos/{{.DOCKERIZED_BINARY_REPO}}/releases/latest" | grep "tag_name" | cut -d '"' -f4
   GHCR_USERNAME: 'crazy-matt'  # scan:ignore
   GIT_REPO:
-    sh: git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##'
+    sh: git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##' -e 's#//github.com/*##'
   GIT_REPO_LATEST_RELEASE:
     sh: curl -s "https://api.github.com/repos/{{.GIT_REPO}}/releases/latest" | grep "tag_name" | cut -d '"' -f4
   GIT_REPO_HTTP_URL:

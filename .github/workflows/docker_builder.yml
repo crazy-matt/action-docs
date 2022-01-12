@@ -42,8 +42,6 @@ jobs:
       - name: 'Test'
         id: test
         run: |
-          git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##'
-          echo --- ---
           task docker:test
           task test
   vulnerability_scanner:
