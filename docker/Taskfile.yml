@@ -57,7 +57,7 @@ tasks:
 
   build:
     desc: Build Docker image
-    #deps: [lint]
+    deps: [lint]
     cmds:
     - |
       docker build --pull \
