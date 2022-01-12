@@ -1,6 +1,6 @@
 dockle 0.4.3
 grype 0.28.0
-hadolint 2.8.0
+hadolint v2.8.0
 httpie-go 0.7.0
 shellcheck 0.8.0
 shfmt 3.4.2
