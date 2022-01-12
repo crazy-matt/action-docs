@@ -100,7 +100,7 @@ jobs:
             echo "::set-output name=status_color::red"
           fi
           echo "::set-output name=icon::data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjIiIGJhc2VQcm9maWxlPSJ0aW55LXBzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMSAzNiIgd2lkdGg9IjMxIiBoZWlnaHQ9IjM2Ij4KCTx0aXRsZT5zaGllbGRfMTA2NjYwLXN2ZzwvdGl0bGU+Cgk8c3R5bGU+CgkJdHNwYW4geyB3aGl0ZS1zcGFjZTpwcmUgfQoJCS5zMCB7IGZpbGw6ICNmZmI0MDA7c3Ryb2tlOiAjZmZmZmZmO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS13aWR0aDogMCB9IAoJCS5zMSB7IGZpbGw6ICMwNzBjMmI7c3Ryb2tlOiAjZmZmZmZmO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS13aWR0aDogMCB9IAoJPC9zdHlsZT4KCTxwYXRoIGlkPSJMYXllciIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGFzcz0iczAiIGQ9Im0xNS41MiAzNWMtMTUuOTMtNi4xNy0xNC40OC0yNy4yLTE0LjQ4LTI3LjJjOS42NCAxLjc4IDE0LjQ4LTYuOCAxNC40OC02LjhjMCAwIDQuODMgOC41OCAxNC40NSA2LjhjMCAwIDEuNDQgMjEuMDMtMTQuNDUgMjcuMnoiIC8+Cgk8cGF0aCBpZD0iTGF5ZXIiIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xhc3M9InMxIiBkPSJtMTAgMTdsMyAzbDgtOGwyIDJsLTEwIDEwbC01LTVsMi0yeiIgLz4KPC9zdmc+"
-          echo "::set-output name=icon_width::16"
+          echo "::set-output name=icon_width::18"
           echo "::set-output name=label::Vulnerabilities"
           echo "::set-output name=label_color::555"
           echo "::set-output name=path::vulnerability.svg"
