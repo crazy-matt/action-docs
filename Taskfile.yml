@@ -45,15 +45,7 @@ tasks:
     # - |
     #   if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then
     #     grype "dir:." --output template --template "/tmp/grype-sarif.tpl" --file "grype-report.sarif" --config .security/grype.yaml
-    #   then
-    # For SARIF report generation, implement the GitHub Action:
-    # - name: Scan current project
-    #   id: scan
-    #   uses: anchore/scan-action@v3.2.0
-    #   with:
-    #     path: "./"
-    #     fail-build: true
-    #     acs-report-enable: true
+    #   fi
     silent: true
 
   security:secret:gitleaks:

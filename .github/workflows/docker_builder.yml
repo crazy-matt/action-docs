@@ -43,7 +43,7 @@ jobs:
         id: test
         run: |
           task docker:test
-          task test
+          task lint
         env:
           GHCR_TOKEN: ${{ secrets.CI_GH_PAT_CONTAINER_REGISTRY_AUTH }}
   vulnerability_scanner:
@@ -74,12 +74,19 @@ jobs:
           task security -- sarif
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: 'Dedicated Grype scan for SARIF report creation'
+        id: scan_grype
+        uses: anchore/scan-action@v3.2.0
+        with:
+          path: "./"
+          fail-build: true
+          acs-report-enable: true
       - name: 'Upload SARIF reports'
         if: always()
         continue-on-error: true
         uses: github/codeql-action/upload-sarif@v1.0.26
         with:
-          sarif_file: "*.sarif"
+          sarif_file: "./*.sarif"
       - name: 'Set badge properties'
         id: badge
         if: always()
@@ -94,7 +101,7 @@ jobs:
           echo "::set-output name=icon::https://fonts.gstatic.com/s/i/materialicons/security/v12/24px.svg"
           echo "::set-output name=label::Vulnerability"
           echo "::set-output name=label-color::555"
-          echo "::set-output name=path::.github/badges/vulnerability.svg"
+          echo "::set-output name=path::vulnerability.svg"
       - name: 'Update badges'
         if: always()
         uses: emibcn/badge-action@v1.2.1

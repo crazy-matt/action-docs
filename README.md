@@ -1,7 +1,7 @@
 # actions-docs
 
 [![Build](https://github.com/crazy-matt/action-docs/actions/workflows/docker_builder.yml/badge.svg)](https://github.com/crazy-matt/action-docs/actions/workflows/docker_builder.yml)
-![Vulnerabilities](https://github.com/crazy-matt/action-docs/blob/--badges/.github/badges/vulnerability.svg)
+![Vulnerabilities](https://github.com/crazy-matt/action-docs/blob/badges/vulnerability.svg)
 
 A dockerized [action-docs](https://github.com/npalm/action-docs) wrapper.
 
