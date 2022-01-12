@@ -82,6 +82,7 @@ tasks:
     deps: [build]
     cmds:
     - |
+      git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##'
       docker run -it --rm \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v {{.REPO_ABS_ROOT_PATH}}:/work \
