@@ -46,6 +46,48 @@ jobs:
           task lint
         env:
           GHCR_TOKEN: ${{ secrets.CI_GH_PAT_CONTAINER_REGISTRY_AUTH }}
+      - name: 'Set badge properties'
+        id: badge
+        if: github.event_name == 'push'
+        # icon is svg converted to base64 (https://base64.guru/converter/encode/image/svg)
+        run: |
+          if [[ "${{ steps.test.outcome }}" == "success" ]]; then
+            echo "::set-output name=status::passing"
+            echo "::set-output name=status_color::green"
+          else
+            echo "::set-output name=status::failed"
+            echo "::set-output name=status_color::red"
+          fi
+          echo "::set-output name=icon::data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjIiIGJhc2VQcm9maWxlPSJ0aW55LXBzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NiA0NiIgd2lkdGg9IjQ2IiBoZWlnaHQ9IjQ2Ij4KCTx0aXRsZT51c2FiaWxpdHlfdGVzdGluZ19pY29uXzE1MDMyNC1zdmc8L3RpdGxlPgoJPHN0eWxlPgoJCXRzcGFuIHsgd2hpdGUtc3BhY2U6cHJlIH0KCQkuczAgeyBmaWxsOiBub25lO3N0cm9rZTogIzRjNTE1OTtzdHJva2Utd2lkdGg6IDIgfSAKCTwvc3R5bGU+Cgk8ZyBpZD0iaWNvbnMiPgoJCTxnIGlkPSJYTUxJRF80NDZfIj4KCQkJPHBhdGggaWQ9IlhNTElEXzQ1NF8iIGNsYXNzPSJzMCIgZD0ibTIuMiA0My4ydi00MC42YzAtMC4yIDAuMi0wLjMgMC4zLTAuM2g0MGMwLjIgMCAwLjMgMC4yIDAuMyAwLjN2MzMuOSIgLz4KCQkJPHBhdGggaWQ9IlhNTElEXzQ1M18iIGNsYXNzPSJzMCIgZD0ibTIuMyA4LjFoNDAuNSIgLz4KCQkJPHBhdGggaWQ9IlhNTElEXzQ1MV8iIGNsYXNzPSJzMCIgZD0ibTYuMyA1aDIuNyIgLz4KCQkJPHBhdGggaWQ9IlhNTElEXzQ1MF8iIGNsYXNzPSJzMCIgZD0ibTEwLjYgNWgyLjYiIC8+CgkJCTxwYXRoIGlkPSJYTUxJRF80NDlfIiBjbGFzcz0iczAiIGQ9Im0xNC45IDVoMi42IiAvPgoJCQk8cGF0aCBpZD0iWE1MSURfNDQyXyIgY2xhc3M9InMwIiBkPSJtMTIuNCAyMi4yaC01LjF2LTEwLjNoMjkuNnY1LjIiIC8+CgkJCTxwYXRoIGlkPSJYTUxJRF80NDVfIiBjbGFzcz0iczAiIGQ9Im0xNS4yIDMzLjhoLTcuOXYtNy4xaDUuMiIgLz4KCQkJPHBhdGggaWQ9IlhNTElEXzQ2MF8iIGNsYXNzPSJzMCIgZD0ibTQzLjcgNDEuMWwtMi41IDIuNWMtMC4xIDAuMS0wLjIgMC4xLTAuMyAwbC02LjMtNi4zYy0wLjEtMC4xLTAuMS0wLjIgMC0wLjNsMi41LTIuNWMwLjEtMC4xIDAuMi0wLjEgMC4zIDBsNi4zIDYuM2MwIDAuMSAwIDAuMiAwIDAuM3oiIC8+CgkJCTxwYXRoIGlkPSJYTUxJRF80NThfIiBjbGFzcz0iczAiIGQ9Im0zMy4yIDMzLjFsMi4yIDIuMiIgLz4KCQkJPHBhdGggaWQ9IlhNTElEXzQ1NV8iIGNsYXNzPSJzMCIgZD0ibTI1LjggMzYuMmMtNi4wOCAwLTExLTQuOTItMTEtMTFjMC02LjA4IDQuOTItMTEgMTEtMTFjNi4wOCAwIDExIDQuOTIgMTEgMTFjMCA2LjA4LTQuOTIgMTEtMTEgMTF6IiAvPgoJCQk8cGF0aCBpZD0iWE1MSURfNDQzXyIgY2xhc3M9InMwIiBkPSJtMjkuOCAyMi4zbC01LjEgNS4ybC0zLTMiIC8+CgkJPC9nPgoJPC9nPgo8L3N2Zz4="
+          echo "::set-output name=icon_width::20"
+          echo "::set-output name=label::Tests"
+          echo "::set-output name=label_color::555"
+          echo "::set-output name=path::tests.svg"
+      - name: 'Update badges'
+        if: github.event_name == 'push'
+        uses: emibcn/badge-action@v1.2.1
+        with:
+          icon: ${{ steps.badge.outputs.icon }}
+          icon-width: ${{ steps.badge.outputs.icon_width }}
+          label: ${{ steps.badge.outputs.label }}
+          label-color: ${{ steps.badge.outputs.label_color }}
+          status: ${{ steps.badge.outputs.status }}
+          color: ${{ steps.badge.outputs.status_color }}
+          path: ${{ steps.badge.outputs.path }}
+      - name: "Check if there are changes"
+        id: changes
+        if: github.event_name == 'push'
+        uses: UnicornGlobal/has-changes-action@v1.0.12
+      - name: "Commit-back changes"
+        if: steps.changes.outputs.changed == 1
+        uses: swinton/commit@v2.0.0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            tests.svg
+          commit-message: "update tests.svg"
+          ref: refs/heads/badges
   vulnerability_scanner:
     name: 'Vulnerability Scan'
     runs-on: ubuntu-latest
@@ -89,7 +131,7 @@ jobs:
           sarif_file: "./*.sarif"
       - name: 'Set badge properties'
         id: badge
-        if: always()
+        if: github.event_name == 'push'
         # icon is svg converted to base64 (https://base64.guru/converter/encode/image/svg)
         run: |
           if [[ "${{ steps.scan.outcome }}" == "success" ]]; then
@@ -105,7 +147,7 @@ jobs:
           echo "::set-output name=label_color::555"
           echo "::set-output name=path::vulnerability.svg"
       - name: 'Update badges'
-        if: always()
+        if: github.event_name == 'push'
         uses: emibcn/badge-action@v1.2.1
         with:
           icon: ${{ steps.badge.outputs.icon }}
@@ -117,6 +159,7 @@ jobs:
           path: ${{ steps.badge.outputs.path }}
       - name: "Check if there are changes"
         id: changes
+        if: github.event_name == 'push'
         uses: UnicornGlobal/has-changes-action@v1.0.12
       - name: "Commit-back changes"
         if: steps.changes.outputs.changed == 1
