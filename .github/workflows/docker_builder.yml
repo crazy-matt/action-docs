@@ -125,4 +125,4 @@ jobs:
         with:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
           event-type: slack-notification
-          client-payload: '{ "type": "build", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "color": "#2EB67D", "title": "📦 ${{ github.repository }} New Image", "message": "Check-out \'https://github.com/${GITHUB_REPOSITORY}/pkgs/container/${GITHUB_REPOSITORY}\'" }'
+          client-payload: '{ "type": "build", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "color": "#2EB67D", "title": "📦 ${{ github.repository }} New Image", "message": "Check-out nothing" }'
