@@ -1,0 +1,193 @@
+# https://taskfile.dev
+# A modern replacement of Makefile
+version: '3'
+
+vars:
+  BUILD_DATE:
+    sh: date -u +'%Y-%m-%dT%H:%M:%SZ'
+  BUILD_DATE_TAG:
+    sh: date -u +'%Y%m%dT%H%M%SZ'
+  DOCKERIZED_BINARY_REPO: 'npalm/action-docs'
+  BUILD_VERSION:
+    sh: |
+      curl -s "https://api.github.com/repos/{{.DOCKERIZED_BINARY_REPO}}/releases/latest" | grep "tag_name" | cut -d '"' -f4
+  GHCR_USERNAME: 'crazy-matt'
+  GIT_REPO:
+    sh: git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##'
+  GIT_REPO_LATEST_RELEASE:
+    sh: curl -s "https://api.github.com/repos/{{.GIT_REPO}}/releases/latest" | grep "tag_name" | cut -d '"' -f4
+  GIT_REPO_HTTP_URL:
+    sh: echo "https://github.com/$(git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##')"
+  GIT_SHORT_SHA:
+    sh: git rev-parse --short HEAD
+  DOCKER_IMAGE_NAME: '{{.GIT_REPO}}:{{.BUILD_VERSION}}'
+  REPO_ABS_ROOT_PATH:
+    sh: git rev-parse --show-toplevel
+  RELATIVE_PATH_TO_ROOT:
+    sh: realpath --relative-to="$(pwd)" "{{.REPO_ABS_ROOT_PATH}}"
+
+tasks:
+  default:
+    cmds:
+    - task --list
+    silent: true
+
+  debug:
+    desc: Run all debug tasks
+    cmds:
+    - task: debug:resolve_vars
+    silent: true
+
+  debug:resolve_vars:
+    desc: Output few things which can help debugging
+    cmds:
+    - echo "Absolute path":"                     {{.REPO_ABS_ROOT_PATH}}"
+    - echo "Relative path":"                     {{.RELATIVE_PATH_TO_ROOT}}"
+    - echo "Git Repository":"                    {{.GIT_REPO}}"
+    - echo "Git Repository latest release":"     {{.GIT_REPO_LATEST_RELEASE}}"
+    - echo "Dockerized binary":"                 {{.DOCKERIZED_BINARY_REPO}}"
+    - echo "docker date tag":"                   {{.BUILD_DATE_TAG}}"
+    - echo "docker version tag":"                {{.BUILD_VERSION}}"
+    - echo "image name":"                        {{.DOCKER_IMAGE_NAME}}"
+    - echo "org.opencontainers.image.authors":"  $([ -z {{.AUTHOR}} ] && echo 'hardcoded in Dockerfile' || echo {{.AUTHOR}})"
+    - echo "org.opencontainers.image.created":"  {{.BUILD_DATE}}"
+    - echo "org.opencontainers.image.revision":" {{.GIT_SHORT_SHA}}"
+    - echo "org.opencontainers.image.source":"   {{.GIT_REPO_HTTP_URL}}"
+    silent: true
+
+  build:
+    desc: Build Docker image
+    deps: [lint]
+    cmds:
+    - |
+      docker build --pull \
+        --file "Dockerfile" \
+        --tag "{{.DOCKER_IMAGE_NAME}}" \
+        --build-arg AUTHOR="{{.AUTHOR}}" \
+        --build-arg BUILD_DATE="{{.BUILD_DATE}}" \
+        --build-arg DOCKER_TAG="{{.BUILD_VERSION}}" \
+        --build-arg GIT_REPO="{{.GIT_REPO}}" \
+        --build-arg GIT_REPO_HTTP_URL="{{.GIT_REPO_HTTP_URL}}" \
+        --build-arg GIT_SHORT_SHA="{{.GIT_SHORT_SHA}}" \
+        .
+    env:
+      DOCKER_BUILDKIT: 1
+    sources:
+    - Dockerfile
+    method: checksum
+    silent: true
+
+  test:
+    desc: Test Docker image
+    deps: [build]
+    cmds:
+    - |
+      docker run -it --rm \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v {{.REPO_ABS_ROOT_PATH}}:/work \
+        -e "BUILD_VERSION={{.BUILD_VERSION}}" \
+        -e "IMAGE_NAME={{.DOCKER_IMAGE_NAME}}" \
+        ghcr.io/crazy-matt/bats-action:latest \
+        tests/action-docs.bats
+    silent: true
+
+  push:
+    desc: Push image to registry
+    deps: [test, security]
+    cmds:
+    - echo "${GHCR_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
+    - docker tag "{{.DOCKER_IMAGE_NAME}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_VERSION}}"
+    - docker tag "{{.DOCKER_IMAGE_NAME}}" "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}"
+    - docker tag "{{.DOCKER_IMAGE_NAME}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}"
+    - docker tag "{{.DOCKER_IMAGE_NAME}}" "ghcr.io/{{.GIT_REPO}}:latest"
+    - docker push "ghcr.io/{{.GIT_REPO}}" --all-tags
+    preconditions:
+    - sh: '[ -n "${GHCR_TOKEN}" ]'
+      msg: 'You need to export a GitHub Token with "write package" permission as an environment variable GHCR_TOKEN'
+    - sh: '[ "$(SEMVER1="{{.BUILD_VERSION}}" SEMVER2="{{.GIT_REPO_LATEST_RELEASE}}" FORCE="${FORCE_RELEASE}" task semver1_greater_than_semver2)" == "true" ]'
+      msg: 'Binary latest version already dockerized'
+    silent: true
+
+  dependencies:
+    desc: Install dependencies
+    cmds:
+    - plugin_name="httpie-go"; asdf plugin add "${plugin_name}" || true; asdf install "${plugin_name}" $(asdf current "${plugin_name}" | tr -s ' ' | cut -d' ' -f2)
+    silent: true
+
+  # Run: 'SEMVER1="1.0.1" SEMVER2="1.0.0" task semver1_greater_than_semver2' ...returns... true
+  # Run: 'SEMVER1="1.0.0" SEMVER2="1.0.0" task semver1_greater_than_semver2' ...returns... false
+  # Run: 'SEMVER1="1.0.0" SEMVER2="1.0.1" task semver1_greater_than_semver2' ...returns... false
+  # Run: 'SEMVER1="1.0.0" SEMVER2="1.0.1" FORCE="true" task semver1_greater_than_semver2' ...returns... true
+  semver1_greater_than_semver2:
+    desc: Test if SEMVER1 is greater than SEMVER2
+    cmds:
+    - |
+      if [[ "{{.SEMVER1}}" != "{{.SEMVER2}}" && "$(printf "{{.SEMVER1}}\n{{.SEMVER2}}\n" | sort -V | head -n 1)" == "{{.SEMVER2}}" ]] || [[ "{{.FORCE}}" == "true" ]]; then
+        echo "true"
+      else
+        echo "false"
+      fi
+    silent: true
+
+  security:
+    desc: Run all security scanners
+    deps: [dependencies]
+    cmds:
+    - task: security:image:docker-scan
+    - task: security:image:dockle
+    - task: security:image:trivy
+    silent: true
+
+  security:image:docker-scan:
+    desc: Run Snyk tests
+    deps: [build]
+    cmds:
+    # - docker scan --accept-license {{.DOCKER_IMAGE_NAME}}
+    - snyk auth "${SNYK_TOKEN}"; snyk container test {{.DOCKER_IMAGE_NAME}} --file=Dockerfile --sarif-file-output={{.RELATIVE_PATH_TO_ROOT}}/snyk-report.sarif
+    ignore_error: true  # needed as we could reach the free tier limit
+    silent: true
+
+  security:image:dockle:
+    desc: Run Dockle (Container Image Linter for Security)
+    deps: [build]
+    cmds:
+    - plugin_name="dockle"; asdf plugin add "${plugin_name}" || true; asdf install "${plugin_name}" $(asdf current "${plugin_name}" | tr -s ' ' | cut -d' ' -f2)
+    - dockle $(for id in $(egrep -o '^[a-zA-Z]{3}-[a-zA-Z]{2}-[[:digit:]]{4}' "{{.REPO_ABS_ROOT_PATH}}/.security/cis-cve-ignore"); do filter+="-i ${id} "; done; echo "${filter}") {{.DOCKER_IMAGE_NAME}}
+    # The ignore file is parsed to filter CIS ids as there's no way to specify a file in dockle as of 2021.12.
+    - |
+      if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then
+        dockle $(for id in $(egrep -o '^[a-zA-Z]{3}-[a-zA-Z]{2}-[[:digit:]]{4}' "{{.REPO_ABS_ROOT_PATH}}/.security/cis-cve-ignore"); do filter+="-i ${id} "; done; echo "${filter}") -f sarif -o {{.RELATIVE_PATH_TO_ROOT}}/dockle-report.sarif {{.DOCKER_IMAGE_NAME}}
+      fi
+    silent: true
+    env:
+      DOCKER_CONTENT_TRUST: 1
+
+  security:image:trivy:
+    desc: Run Aquasecurity Trivy (vulnerability scanner for container images)
+    deps: [build]
+    cmds:
+    - plugin_name="trivy"; asdf plugin add "${plugin_name}" || true; asdf install "${plugin_name}" $(asdf current "${plugin_name}" | tr -s ' ' | cut -d' ' -f2)
+    - trivy image --ignorefile {{.RELATIVE_PATH_TO_ROOT}}/.security/cis-cve-ignore --format table {{.DOCKER_IMAGE_NAME}}
+    # If task is called passing an arg sarif or --ssarif, then a sarif report is created.
+    # We use httpie-go as a common tool to download or call APIs (much more convenient than the outdated curl)
+    - |
+      if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then
+        ht --print=B --output "/tmp/trivy-sarif.tpl" --download "https://raw.github.com/aquasecurity/trivy/main/contrib/sarif.tpl"
+        trivy image --ignorefile {{.RELATIVE_PATH_TO_ROOT}}/.security/cis-cve-ignore --format template --template "@/tmp/trivy-sarif.tpl" -o {{.RELATIVE_PATH_TO_ROOT}}/trivy-report.sarif {{.DOCKER_IMAGE_NAME}}
+      fi
+    silent: true
+
+  lint:
+    desc: Run all linters
+    deps: [dependencies]
+    cmds:
+    - task: lint:dockerfile:hadolint
+    silent: true
+
+  lint:dockerfile:hadolint:
+    desc: Lint Dockerfile
+    cmds:
+    - plugin_name="hadolint"; asdf plugin add "${plugin_name}" https://github.com/crazy-matt/asdf-hadolint.git || true; asdf install "${plugin_name}" $(asdf current "${plugin_name}" | tr -s ' ' | cut -d' ' -f2)
+    # ^^ Waiting for the asdf hadolint plugin's owner to accept a PR
+    - hadolint --config {{.RELATIVE_PATH_TO_ROOT}}/.linters/hadolint.yml --format tty Dockerfile
+    silent: true

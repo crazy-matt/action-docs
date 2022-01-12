@@ -1,0 +1,125 @@
+name: "Docker Builder"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: [ main ]
+    paths:
+      - 'docker/Dockerfile'
+  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
+  schedule:
+    # Run every day at 12 pm
+    - cron: "0 12 * * *"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  approver:
+    name: 'Test'
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'pull_request' && github.event.action != 'closed') ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule'
+    steps:
+      - name: 'Set Job Vars'
+        id: vars
+        run: |
+          echo "::set-output name=task_version::$(cat .tool-versions | grep -w task | cut -d ' ' -f2)"
+      - name: 'Install Task'
+        uses: arduino/setup-task@v1.0.0
+        with:
+          version: ${{ steps.vars.outputs.task_version }}
+      - name: 'Test'
+        id: test
+        run: |
+          task docker:test
+          task test
+  vulnerability_scanner:
+    name: 'Vulnerability Scan'
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'pull_request' && github.event.action != 'closed') ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule'
+    steps:
+      - name: 'Set Job Vars'
+        id: vars
+        run: |
+          echo "::set-output name=task_version::$(cat .tool-versions | grep -w task | cut -d ' ' -f2)"
+      - name: 'Install Task'
+        uses: arduino/setup-task@v1.0.0
+        with:
+          version: ${{ steps.vars.outputs.task_version }}
+      - name: 'Scan for Vulnerabilities'
+        id: scan
+        run: |
+          task docker:security -- sarfif
+          task security -- sarfif
+      - name: 'Upload SARIF reports'
+        if: always()
+        uses: github/codeql-action/upload-sarif@v1.0.26
+        with:
+          sarif_file: *.sarif
+      - name: 'Set badge properties'
+        id: badge
+        if: always()
+        run: |
+          if [[ "${{ steps.scan.outcome }}" == "success" ]]; then
+            echo "::set-output name=status::passing"
+            echo "::set-output name=color::YellowGreen"
+          else
+            echo "::set-output name=status::failed"
+            echo "::set-output name=color::Red"
+          fi
+          echo "::set-output name=icon::https://fonts.gstatic.com/s/i/materialicons/security/v12/24px.svg"
+          echo "::set-output name=label::Vulnerability"
+          echo "::set-output name=label-color::555"
+          echo "::set-output name=path::.github/badges/vulnerability.svg"
+      - name: 'Update badges'
+        if: always()
+        uses: emibcn/badge-action@v1.2.1
+        with:
+          icon: ${{ steps.badge.outputs.icon }}
+          label: ${{ steps.badge.outputs.label }}
+          label-color: ${{ steps.badge.outputs.label-color }}
+          status: ${{ steps.badge.outputs.status }}
+          color: ${{ steps.badge.outputs.color }}
+          path: ${{ steps.badge.outputs.path }}
+  releaser:
+    name: 'Push'
+    runs-on: ubuntu-latest
+    needs: [approver, vulnerability_scanner]
+    if: |
+      (github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      contains(github.event.pull_request.labels.*.name, 'skip-release') == false) ||
+      github.event_name == 'schedule'
+    steps:
+      - name: 'Set Job Vars'
+        id: vars
+        run: |
+          echo "::set-output name=task_version::$(cat .tool-versions | grep -w task | cut -d ' ' -f2)"
+          if [[ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'force-release') == true ]]; then
+            echo "::set-output name=force_release::true"
+          else
+            echo "::set-output name=force_release::false"
+          fi
+      - name: 'Install Task'
+        uses: arduino/setup-task@v1.0.0
+        with:
+          version: ${{ steps.vars.outputs.task_version }}
+      - name: 'Docker Push'
+        run: |
+          task docker:push
+        env:
+          GHCR_TOKEN: ${{ secrets.CI_GH_PAT_CONTAINER_REGISTRY_AUTH }}
+          FORCE_RELEASE: ${{ steps.vars.outputs.force_release }}
+      - name: "Notify about the build"
+        uses: peter-evans/repository-dispatch@v1.1.3
+        with:
+          token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
+          event-type: slack-notification
+          client-payload: '{ "type": "build", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "color": "#2EB67D", "title": "📦 ${{ github.repository }} New Image", "message": "Check-out 'https://github.com/${GITHUB_REPOSITORY}/pkgs/container/${GITHUB_REPOSITORY#*/}'" }'
