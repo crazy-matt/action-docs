@@ -41,10 +41,9 @@ jobs:
       - name: 'Test'
         id: test
         run: |
-          ls -lna /
-          ls -lna /bin | grep task
-          ls -lna /usr/bin | grep task
-          ls -lna /usr/local/bin | grep task
+          ls -lna / || true
+          ls -lna /usr/bin | grep task || true
+          ls -lna /usr/local/bin | grep task || true
           task docker:test
           task test
   vulnerability_scanner:
