@@ -33,7 +33,7 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=task_version::$(cat ${{ github.workspace }}/.tool-versions | grep -w task | cut -d ' ' -f2)"
-      - name: 'Install asdf'
+      - name: 'Install asdf dependencies'
         uses: asdf-vm/actions/install@v1
       - name: 'Install Task'
         uses: arduino/setup-task@v1
@@ -59,7 +59,7 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=task_version::$(cat ${{ github.workspace }}/.tool-versions | grep -w task | cut -d ' ' -f2)"
-      - name: 'Install asdf'
+      - name: 'Install asdf dependencies'
         uses: asdf-vm/actions/install@v1
       - name: 'Install Task'
         uses: arduino/setup-task@v1
@@ -124,7 +124,7 @@ jobs:
           else
             echo "::set-output name=force_release::false"
           fi
-      - name: 'Install asdf'
+      - name: 'Install asdf dependencies'
         uses: asdf-vm/actions/install@v1
       - name: 'Install Task'
         uses: arduino/setup-task@v1
