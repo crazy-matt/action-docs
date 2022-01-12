@@ -1,0 +1,20 @@
+<svg width="113.9" height="20" viewBox="0 0 1139 200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="Tests: passing">
+  <title>Tests: passing</title>
+  <linearGradient id="a" x2="0" y2="100%">
+    <stop offset="0" stop-opacity=".1" stop-color="#EEE"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <mask id="m"><rect width="1139" height="200" rx="30" fill="#FFF"/></mask>
+  <g mask="url(#m)">
+    <rect width="621" height="200" fill="#555"/>
+    <rect width="518" height="200" fill="#3C1" x="621"/>
+    <rect width="1139" height="200" fill="url(#a)"/>
+  </g>
+  <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
+    <text x="290" y="148" textLength="291" fill="#000" opacity="0.25">Tests</text>
+    <text x="280" y="138" textLength="291">Tests</text>
+    <text x="676" y="148" textLength="418" fill="#000" opacity="0.25">passing</text>
+    <text x="666" y="138" textLength="418">passing</text>
+  </g>
+  <image x="40" y="35" width="200" height="130" xlink:href="data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjIiIGJhc2VQcm9maWxlPSJ0aW55LXBzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NiA0NiIgd2lkdGg9IjQ2IiBoZWlnaHQ9IjQ2Ij4KCTx0aXRsZT51c2FiaWxpdHlfdGVzdGluZ19pY29uXzE1MDMyNC1zdmc8L3RpdGxlPgoJPHN0eWxlPgoJCXRzcGFuIHsgd2hpdGUtc3BhY2U6cHJlIH0KCQkuczAgeyBmaWxsOiBub25lO3N0cm9rZTogIzRjNTE1OTtzdHJva2Utd2lkdGg6IDIgfSAKCTwvc3R5bGU+Cgk8ZyBpZD0iaWNvbnMiPgoJCTxnIGlkPSJYTUxJRF80NDZfIj4KCQkJPHBhdGggaWQ9IlhNTElEXzQ1NF8iIGNsYXNzPSJzMCIgZD0ibTIuMiA0My4ydi00MC42YzAtMC4yIDAuMi0wLjMgMC4zLTAuM2g0MGMwLjIgMCAwLjMgMC4yIDAuMyAwLjN2MzMuOSIgLz4KCQkJPHBhdGggaWQ9IlhNTElEXzQ1M18iIGNsYXNzPSJzMCIgZD0ibTIuMyA4LjFoNDAuNSIgLz4KCQkJPHBhdGggaWQ9IlhNTElEXzQ1MV8iIGNsYXNzPSJzMCIgZD0ibTYuMyA1aDIuNyIgLz4KCQkJPHBhdGggaWQ9IlhNTElEXzQ1MF8iIGNsYXNzPSJzMCIgZD0ibTEwLjYgNWgyLjYiIC8+CgkJCTxwYXRoIGlkPSJYTUxJRF80NDlfIiBjbGFzcz0iczAiIGQ9Im0xNC45IDVoMi42IiAvPgoJCQk8cGF0aCBpZD0iWE1MSURfNDQyXyIgY2xhc3M9InMwIiBkPSJtMTIuNCAyMi4yaC01LjF2LTEwLjNoMjkuNnY1LjIiIC8+CgkJCTxwYXRoIGlkPSJYTUxJRF80NDVfIiBjbGFzcz0iczAiIGQ9Im0xNS4yIDMzLjhoLTcuOXYtNy4xaDUuMiIgLz4KCQkJPHBhdGggaWQ9IlhNTElEXzQ2MF8iIGNsYXNzPSJzMCIgZD0ibTQzLjcgNDEuMWwtMi41IDIuNWMtMC4xIDAuMS0wLjIgMC4xLTAuMyAwbC02LjMtNi4zYy0wLjEtMC4xLTAuMS0wLjIgMC0wLjNsMi41LTIuNWMwLjEtMC4xIDAuMi0wLjEgMC4zIDBsNi4zIDYuM2MwIDAuMSAwIDAuMiAwIDAuM3oiIC8+CgkJCTxwYXRoIGlkPSJYTUxJRF80NThfIiBjbGFzcz0iczAiIGQ9Im0zMy4yIDMzLjFsMi4yIDIuMiIgLz4KCQkJPHBhdGggaWQ9IlhNTElEXzQ1NV8iIGNsYXNzPSJzMCIgZD0ibTI1LjggMzYuMmMtNi4wOCAwLTExLTQuOTItMTEtMTFjMC02LjA4IDQuOTItMTEgMTEtMTFjNi4wOCAwIDExIDQuOTIgMTEgMTFjMCA2LjA4LTQuOTIgMTEtMTEgMTF6IiAvPgoJCQk8cGF0aCBpZD0iWE1MSURfNDQzXyIgY2xhc3M9InMwIiBkPSJtMjkuOCAyMi4zbC01LjEgNS4ybC0zLTMiIC8+CgkJPC9nPgoJPC9nPgo8L3N2Zz4="/>
+</svg>
