@@ -43,6 +43,7 @@ jobs:
       - name: 'Test'
         id: test
         run: |
+          which hadolint
           task docker:test
           task lint
         env:
