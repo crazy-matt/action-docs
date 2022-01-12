@@ -70,6 +70,7 @@ tasks:
         --build-arg GIT_REPO_HTTP_URL="{{.GIT_REPO_HTTP_URL}}" \
         --build-arg GIT_SHORT_SHA="{{.GIT_SHORT_SHA}}" \
         .
+      echo "📦 Image built"
     env:
       DOCKER_BUILDKIT: 1
     sources:
@@ -89,6 +90,7 @@ tasks:
         -e "IMAGE_NAME={{.DOCKER_IMAGE_NAME}}" \
         ghcr.io/crazy-matt/bats-action:latest \
         tests/action-docs.bats
+      echo "📦 Image validated"
     silent: true
 
   push:
