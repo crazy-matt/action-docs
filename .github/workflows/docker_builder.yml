@@ -34,7 +34,7 @@ jobs:
         run: |
           echo "::set-output name=task_version::$(cat ${{ github.workspace }}/.tool-versions | grep -w task | cut -d ' ' -f2)"
       - name: 'Install Task'
-        uses: arduino/setup-task@v1.0.0
+        uses: arduino/setup-task@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ steps.vars.outputs.task_version }}
@@ -59,7 +59,7 @@ jobs:
         run: |
           echo "::set-output name=task_version::$(cat ${{ github.workspace }}/.tool-versions | grep -w task | cut -d ' ' -f2)"
       - name: 'Install Task'
-        uses: arduino/setup-task@v1.0.0
+        uses: arduino/setup-task@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ steps.vars.outputs.task_version }}
@@ -123,7 +123,7 @@ jobs:
             echo "::set-output name=force_release::false"
           fi
       - name: 'Install Task'
-        uses: arduino/setup-task@v1.0.0
+        uses: arduino/setup-task@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ steps.vars.outputs.task_version }}
