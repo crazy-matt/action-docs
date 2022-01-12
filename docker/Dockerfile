@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: Apache-2.0
 ARG BASE_IMAGE=alpine
 ARG BASE_IMAGE_TAG=latest
 
