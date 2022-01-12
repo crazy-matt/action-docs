@@ -44,6 +44,9 @@ jobs:
         id: test
         run: |
           which hadolint
+          cat $(which hadolint)
+          ls -lna /home/runner/.asdf/installs/hadolint/2.8.0/bin/
+          echo $PATH
           hadolint --version
           task docker:test
           task lint
