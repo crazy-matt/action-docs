@@ -23,23 +23,34 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           yaml-file: .github/labels.yml
   create_required_branches:
-    name: "Branch Initialiser"
+    name: "Branch Creator"
     if: github.event_name == 'push' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout'
+      - name: "Checkout"
         uses: actions/checkout@v2
-      - run: |
-          git branch --remotes 
-          if [[ "$(git branch --remotes | grep --extended-regexp "^[[:space:]]+origin/badges$")" ]]; then
+      - run: git branch --remotes
+      - name: "Create branch if needed"
+        id: creation
+        run: |
+          echo "::set-output name=changed::false"
+          if [[ -z "$(git branch --remotes | { grep --extended-regexp "^[[:space:]]+origin/badges$" || true; })" ]]; then
+            echo "::set-output name=changed::true"
             git checkout --orphan badges
-            # Unstage all the files in your working tree.
+            # Unstage all the files in your working tree
             git rm --cached $(git ls-files)
             echo '# Badges branch' > README.md
-            git add README.md
-            git commit -m 'initialise the badges branch'
-            git push origin badges
           fi
+      - name: "Commit-back changes"
+        if: steps.creation.outputs.changed == 'true'
+        uses: swinton/commit@v2.0.0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            README.md
+          commit-message: "initialise the badges branch"
+          ref: refs/heads/badges
   cleanup_branches:
     name: "Branch Cleaner"
     if: github.event_name == 'schedule'
