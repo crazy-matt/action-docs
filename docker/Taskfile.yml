@@ -193,7 +193,7 @@ tasks:
   lint:dockerfile:hadolint:
     desc: Lint Dockerfile
     cmds:
-    - plugin_name="hadolint"; asdf plugin add "${plugin_name}" https://github.com/crazy-matt/asdf-hadolint.git || true; asdf install "${plugin_name}" $(asdf current "${plugin_name}" | tr -s ' ' | cut -d' ' -f2)
+    - plugin_name="hadolint"; asdf plugin add "${plugin_name}" https://github.com/crazy-matt/asdf-hadolint2.git || true; asdf install "${plugin_name}" $(asdf current "${plugin_name}" | tr -s ' ' | cut -d' ' -f2)
     #- plugin_name="hadolint"; asdf plugin add "${plugin_name}" || true; asdf install "${plugin_name}" $(asdf current "${plugin_name}" | tr -s ' ' | cut -d' ' -f2)
     # ^^ Waiting for the asdf hadolint plugin's owner to accept a PR
     - hadolint --config {{.RELATIVE_PATH_TO_ROOT}}/.linters/hadolint.yml --format tty Dockerfile
