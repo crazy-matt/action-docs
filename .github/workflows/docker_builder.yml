@@ -42,15 +42,6 @@ jobs:
       - name: 'Test'
         id: test
         run: |
-          which hadolint
-          cat $(which hadolint)
-          ls -lna /home/runner/.asdf/installs/hadolint/2.8.0/bin/
-          echo $PATH
-          
-          ls -lna /home/runner/.asdf/shims/
-          asdf exec "hadolint" "--version"
-
-          hadolint --version
           task docker:test
           task lint
         env:
