@@ -179,21 +179,21 @@ jobs:
       (github.event_name == 'pull_request' &&
       github.event.action == 'closed' &&
       contains(github.event.pull_request.labels.*.name, 'skip-release') == false) ||
-      github.event_name == 'schedule' || github.event_name == 'push'
+      github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v2
       - name: 'Set Job Vars'
         id: vars
         run: |
-          echo ${{ github.event.pull_request.labels }}
           echo "::set-output name=task_version::$(cat .tool-versions | grep -w task | cut -d ' ' -f2)"
-          if [[ github.event_name == 'pull_request' && ${{ contains(github.event.pull_request.labels.*.name, 'force-release') }}" == 'true' ]]; then
+          if [[ github.event_name == 'pull_request' && "${LABELS[*]}" =~ "force-release" ]]; then
             echo "::set-output name=force_release::true"
           else
             echo "::set-output name=force_release::false"
           fi
-          exit 1
+        env:
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
       - name: 'Install asdf dependencies'
         uses: asdf-vm/actions/setup@v1
       - name: 'Install Task'
