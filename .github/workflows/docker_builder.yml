@@ -186,6 +186,7 @@ jobs:
       - name: 'Set Job Vars'
         id: vars
         run: |
+          echo ${{ github.event.pull_request.labels.*.name }}
           echo "::set-output name=task_version::$(cat .tool-versions | grep -w task | cut -d ' ' -f2)"
           if [[ github.event_name == 'pull_request' && ${{ contains(github.event.pull_request.labels.*.name, 'force-release') }}" == 'true' ]]; then
             echo "::set-output name=force_release::true"
