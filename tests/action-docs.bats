@@ -21,13 +21,13 @@ function setup() {
 
 @test "version installed" {
   echo "$BUILD_VERSION"
-  run docker run -it --rm ${IMAGE} "--version"
+  run docker run -t --rm ${IMAGE} "--version"
   assert_success
   assert_line --index 0 --partial "$BUILD_VERSION"
 }
 
 @test "helper" {
-  run docker run -it --rm ${IMAGE} "--help"
+  run docker run -t --rm ${IMAGE} "--help"
   assert_success
   assert_output --partial 'Options:'
   assert_output --partial 'Show help'
