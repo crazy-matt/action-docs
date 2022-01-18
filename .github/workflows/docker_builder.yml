@@ -47,7 +47,7 @@ jobs:
       - name: 'Test'
         id: test
         run: |
-          task docker:test
+          task docker:tests
           task lint
         env:
           GHCR_TOKEN: ${{ secrets.CI_GH_PAT_CONTAINER_REGISTRY_AUTH }}
