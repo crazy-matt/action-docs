@@ -98,7 +98,7 @@ tasks:
 
   push:
     desc: Push image to registry
-    deps: [test, security]
+    deps: [tests, security]
     cmds:
     - echo "${GHCR_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
     - docker tag "{{.DOCKER_IMAGE}}" "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}"
