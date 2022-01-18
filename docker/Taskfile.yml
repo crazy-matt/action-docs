@@ -20,11 +20,15 @@ vars:
     sh: echo "https://github.com/$(git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##')"
   GIT_SHORT_SHA:
     sh: git rev-parse --short HEAD
-  DOCKER_IMAGE_NAME: '{{.GIT_REPO}}:{{.BUILD_VERSION}}'
+  DOCKER_IMAGE_NAME: 'ghcr.io/{{.GIT_REPO}}'
+  DOCKER_IMAGE: '{{.DOCKER_IMAGE_NAME}}:{{.BUILD_VERSION}}'
   REPO_ABS_ROOT_PATH:
     sh: git rev-parse --show-toplevel
   RELATIVE_PATH_TO_ROOT:
-    sh: realpath --relative-to="$(pwd)" "{{.REPO_ABS_ROOT_PATH}}"
+    sh: |
+      realpath --relative-to="$(pwd)" "{{.REPO_ABS_ROOT_PATH}}"
+  TASK_VERSION:
+    sh: cat {{.RELATIVE_PATH_TO_ROOT}}/.tool-versions | grep -w task | cut -d ' ' -f2
 
 tasks:
   default:
@@ -48,11 +52,12 @@ tasks:
     - echo "Dockerized binary":"                 {{.DOCKERIZED_BINARY_REPO}}"
     - echo "docker date tag":"                   {{.BUILD_DATE_TAG}}"
     - echo "docker version tag":"                {{.BUILD_VERSION}}"
-    - echo "image name":"                        {{.DOCKER_IMAGE_NAME}}"
+    - echo "image":"                             {{.DOCKER_IMAGE}}"
     - echo "org.opencontainers.image.authors":"  $([ -z {{.AUTHOR}} ] && echo 'hardcoded in Dockerfile' || echo {{.AUTHOR}})"
     - echo "org.opencontainers.image.created":"  {{.BUILD_DATE}}"
     - echo "org.opencontainers.image.revision":" {{.GIT_SHORT_SHA}}"
     - echo "org.opencontainers.image.source":"   {{.GIT_REPO_HTTP_URL}}"
+    - echo "Task version":"                      {{.TASK_VERSION}}"
     silent: true
 
   build:
@@ -62,11 +67,11 @@ tasks:
     - |
       docker build --pull \
         --file "Dockerfile" \
-        --tag "{{.DOCKER_IMAGE_NAME}}" \
+        --tag "{{.DOCKER_IMAGE}}" \
         --build-arg AUTHOR="{{.AUTHOR}}" \
         --build-arg BUILD_DATE="{{.BUILD_DATE}}" \
+        --build-arg DOCKER_IMAGE="{{.DOCKER_IMAGE}}" \
         --build-arg DOCKER_TAG="{{.BUILD_VERSION}}" \
-        --build-arg GIT_REPO="{{.GIT_REPO}}" \
         --build-arg GIT_REPO_HTTP_URL="{{.GIT_REPO_HTTP_URL}}" \
         --build-arg GIT_SHORT_SHA="{{.GIT_SHORT_SHA}}" \
         .
@@ -78,23 +83,17 @@ tasks:
     method: checksum
     silent: true
 
-  test:
-    desc: Test Docker image
+  tests:
+    desc: Run Project Test Suit (including Docker container tests)
     deps: [build]
     cmds:
-    - echo "${GHCR_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
     - |
-      docker run -t --rm \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -v {{.REPO_ABS_ROOT_PATH}}:/work \
-        -e "BUILD_VERSION={{.BUILD_VERSION}}" \
-        -e "IMAGE_NAME={{.DOCKER_IMAGE_NAME}}" \
-        ghcr.io/crazy-matt/bats-action:latest \
-        tests/action-docs.bats
-    - echo "📦 Image validated"
-    preconditions:
-    - sh: '[ -n "${GHCR_TOKEN}" ]'
-      msg: 'You need to export a GitHub Token with "write package" permission as an environment variable GHCR_TOKEN'
+      {{.RELATIVE_PATH_TO_ROOT}}/tests/libs/bats-core/bin/bats {{.RELATIVE_PATH_TO_ROOT}}/tests/task.bats
+    - echo -e "✅ Some Taskfile tasks validated\n"
+    - |
+      export BUILD_VERSION="{{.BUILD_VERSION}}" IMAGE="{{.DOCKER_IMAGE}}"
+      {{.RELATIVE_PATH_TO_ROOT}}/tests/libs/bats-core/bin/bats {{.RELATIVE_PATH_TO_ROOT}}/tests/action-docs.bats
+    - echo -e "📦 Image validated\n"
     silent: true
 
   push:
@@ -102,11 +101,10 @@ tasks:
     deps: [test, security]
     cmds:
     - echo "${GHCR_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
-    - docker tag "{{.DOCKER_IMAGE_NAME}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_VERSION}}"
-    - docker tag "{{.DOCKER_IMAGE_NAME}}" "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}"
-    - docker tag "{{.DOCKER_IMAGE_NAME}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}"
-    - docker tag "{{.DOCKER_IMAGE_NAME}}" "ghcr.io/{{.GIT_REPO}}:latest"
-    - docker push "ghcr.io/{{.GIT_REPO}}" --all-tags
+    - docker tag "{{.DOCKER_IMAGE}}" "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}"
+    - docker tag "{{.DOCKER_IMAGE}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}"
+    - docker tag "{{.DOCKER_IMAGE}}" "ghcr.io/{{.GIT_REPO}}:latest"
+    - docker push "{{.DOCKER_IMAGE}}" --all-tags
     preconditions:
     - sh: '[ -n "${GHCR_TOKEN}" ]'
       msg: 'You need to export a GitHub Token with "write package" permission as an environment variable GHCR_TOKEN'
@@ -120,10 +118,6 @@ tasks:
     - plugin_name="httpie-go"; asdf plugin add "${plugin_name}" || true; asdf install "${plugin_name}" $(asdf current "${plugin_name}" | tr -s ' ' | cut -d' ' -f2)
     silent: true
 
-  # Run: 'SEMVER1="1.0.1" SEMVER2="1.0.0" task semver1_greater_than_semver2' ...returns... true
-  # Run: 'SEMVER1="1.0.0" SEMVER2="1.0.0" task semver1_greater_than_semver2' ...returns... false
-  # Run: 'SEMVER1="1.0.0" SEMVER2="1.0.1" task semver1_greater_than_semver2' ...returns... false
-  # Run: 'SEMVER1="1.0.0" SEMVER2="1.0.1" FORCE="true" task semver1_greater_than_semver2' ...returns... true
   semver1_greater_than_semver2:
     desc: Test if SEMVER1 is greater than SEMVER2
     cmds:
@@ -148,8 +142,8 @@ tasks:
     desc: Run Snyk tests
     deps: [build]
     cmds:
-    # - docker scan --accept-license {{.DOCKER_IMAGE_NAME}}
-    - snyk auth "${SNYK_TOKEN}"; snyk container test {{.DOCKER_IMAGE_NAME}} --file=Dockerfile --sarif-file-output={{.RELATIVE_PATH_TO_ROOT}}/snyk-report.sarif
+    # - docker scan --accept-license {{.DOCKER_IMAGE}}
+    - snyk auth "${SNYK_TOKEN}"; snyk container test {{.DOCKER_IMAGE}} --file=Dockerfile --sarif-file-output={{.RELATIVE_PATH_TO_ROOT}}/snyk-report.sarif
     ignore_error: true  # needed as we could reach the free tier limit
     silent: true
 
@@ -158,11 +152,11 @@ tasks:
     deps: [build]
     cmds:
     - plugin_name="dockle"; asdf plugin add "${plugin_name}" || true; asdf install "${plugin_name}" $(asdf current "${plugin_name}" | tr -s ' ' | cut -d' ' -f2)
-    - dockle $(for id in $(egrep -o '^[a-zA-Z]{3}-[a-zA-Z]{2}-[[:digit:]]{4}' "{{.REPO_ABS_ROOT_PATH}}/.security/cis-cve-ignore"); do filter+="-i ${id} "; done; echo "${filter}") {{.DOCKER_IMAGE_NAME}}
+    - dockle $(for id in $(egrep -o '^[a-zA-Z]{3}-[a-zA-Z]{2}-[[:digit:]]{4}' "{{.REPO_ABS_ROOT_PATH}}/.security/cis-cve-ignore"); do filter+="-i ${id} "; done; echo "${filter}") {{.DOCKER_IMAGE}}
     # The ignore file is parsed to filter CIS ids as there's no way to specify a file in dockle as of 2021.12.
     - |
       if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then
-        dockle $(for id in $(egrep -o '^[a-zA-Z]{3}-[a-zA-Z]{2}-[[:digit:]]{4}' "{{.REPO_ABS_ROOT_PATH}}/.security/cis-cve-ignore"); do filter+="-i ${id} "; done; echo "${filter}") -f sarif -o {{.RELATIVE_PATH_TO_ROOT}}/dockle-report.sarif {{.DOCKER_IMAGE_NAME}}
+        dockle $(for id in $(egrep -o '^[a-zA-Z]{3}-[a-zA-Z]{2}-[[:digit:]]{4}' "{{.REPO_ABS_ROOT_PATH}}/.security/cis-cve-ignore"); do filter+="-i ${id} "; done; echo "${filter}") -f sarif -o {{.RELATIVE_PATH_TO_ROOT}}/dockle-report.sarif {{.DOCKER_IMAGE}}
       fi
     silent: true
     env:
@@ -173,13 +167,13 @@ tasks:
     deps: [build]
     cmds:
     - plugin_name="trivy"; asdf plugin add "${plugin_name}" || true; asdf install "${plugin_name}" $(asdf current "${plugin_name}" | tr -s ' ' | cut -d' ' -f2)
-    - trivy image --ignorefile {{.RELATIVE_PATH_TO_ROOT}}/.security/cis-cve-ignore --format table {{.DOCKER_IMAGE_NAME}}
+    - trivy image --ignorefile {{.RELATIVE_PATH_TO_ROOT}}/.security/cis-cve-ignore --format table {{.DOCKER_IMAGE}}
     # If task is called passing an arg sarif or --ssarif, then a sarif report is created.
     # We use httpie-go as a common tool to download or call APIs (much more convenient than the outdated curl)
     - |
       if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then
         ht --print=B --output "/tmp/trivy-sarif.tpl" --download "https://raw.github.com/aquasecurity/trivy/main/contrib/sarif.tpl"
-        trivy image --ignorefile {{.RELATIVE_PATH_TO_ROOT}}/.security/cis-cve-ignore --format template --template "@/tmp/trivy-sarif.tpl" -o {{.RELATIVE_PATH_TO_ROOT}}/trivy-report.sarif {{.DOCKER_IMAGE_NAME}}
+        trivy image --ignorefile {{.RELATIVE_PATH_TO_ROOT}}/.security/cis-cve-ignore --format template --template "@/tmp/trivy-sarif.tpl" -o {{.RELATIVE_PATH_TO_ROOT}}/trivy-report.sarif {{.DOCKER_IMAGE}}
       fi
     silent: true
 

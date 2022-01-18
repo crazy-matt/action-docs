@@ -1,9 +1,9 @@
-#!/usr/bin/env bats
-load /opt/bats-assert/load.bash
-load /opt/bats-file/load.bash
-load /opt/bats-mock/stub.bash
-load /opt/bats-support/load.bash
-load /opt/helpers/load.bash
+#!/usr/bin/env libs/bats-core/bin/bats
+load 'libs/bats-assert/load.bash'
+load 'libs/bats-file/load.bash'
+load 'libs/bats-mock/stub.bash'
+load 'libs/bats-support/load.bash'
+load 'libs/helpers/load.bash'
 
 function setup() {
   # See https://bats-core.readthedocs.io/en/stable/writing-tests.html#special-variables
@@ -14,19 +14,20 @@ function setup() {
 # }
 
 @test "image entrypoint" {
-  run bash -c "docker inspect ${IMAGE_NAME} | jq -r '.[].Config.Entrypoint[]'"
+  run bash -c "docker inspect ghcr.io/crazy-matt/action-docs:1.0.3 | jq -r '.[].Config.Entrypoint[]'"
   assert_success
   assert_output "/usr/local/bin/action-docs"
 }
 
 @test "version installed" {
-  run docker run -it --rm ${IMAGE_NAME} "--version"
+  echo "$BUILD_VERSION"
+  run docker run -it --rm ${IMAGE} "--version"
   assert_success
   assert_line --index 0 --partial "$BUILD_VERSION"
 }
 
 @test "helper" {
-  run docker run -it --rm ${IMAGE_NAME} "--help"
+  run docker run -it --rm ${IMAGE} "--help"
   assert_success
   assert_output --partial 'Options:'
   assert_output --partial 'Show help'

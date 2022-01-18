@@ -7,8 +7,8 @@ FROM $BASE_IMAGE:$BASE_IMAGE_TAG AS builder
 ARG NODEJS_VERSION=latest
 ARG AUTHOR="crazy-matt"
 ARG BUILD_DATE
+ARG DOCKER_IMAGE
 ARG DOCKER_TAG
-ARG GIT_REPO
 ARG GIT_REPO_HTTP_URL
 ARG GIT_SHORT_SHA
 
@@ -34,7 +34,7 @@ LABEL org.opencontainers.image.title="Dockerized action-docs" \
     org.opencontainers.image.created="${BUILD_DATE}" \
     org.opencontainers.image.revision="${GIT_SHORT_SHA}" \
     org.opencontainers.image.version="${DOCKER_TAG}" \
-    org.opencontainers.image.cmd="docker run -it --rm -v \$PWD:/work ghcr.io/${GIT_REPO}:${DOCKER_TAG} <action-docs command>"
+    org.opencontainers.image.cmd="docker run -t --rm -v \$PWD:/work ${DOCKER_IMAGE} <action-docs command>"
 
 WORKDIR /work
 ENTRYPOINT ["/usr/local/bin/action-docs"]

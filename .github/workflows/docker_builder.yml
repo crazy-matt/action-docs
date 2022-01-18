@@ -9,6 +9,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
+    inputs:
+      force_release:
+        description: "When the action-docs latest release has already been dockerized but you still want to rebuild a new Docker image"
+        required: false
+        default: 'false'
   schedule:
     # Run every day at 12 pm
     - cron: "0 12 * * *"
@@ -63,31 +68,13 @@ jobs:
           echo "::set-output name=label::Tests"
           echo "::set-output name=label_color::555"
           echo "::set-output name=path::tests.svg"
-      - name: 'Update badges'
+      - name: 'Update badge'
         if: github.event_name == 'push'
-        uses: emibcn/badge-action@v1.2.1
+        uses: peter-evans/repository-dispatch@v1.1.3
         with:
-          icon: ${{ steps.badge.outputs.icon }}
-          icon-width: ${{ steps.badge.outputs.icon_width }}
-          label: ${{ steps.badge.outputs.label }}
-          label-color: ${{ steps.badge.outputs.label_color }}
-          status: ${{ steps.badge.outputs.status }}
-          color: ${{ steps.badge.outputs.status_color }}
-          path: ${{ steps.badge.outputs.path }}
-      - name: "Check if there are changes"
-        id: changes
-        if: github.event_name == 'push'
-        uses: UnicornGlobal/has-changes-action@v1.0.12
-      - name: "Commit-back changes"
-        if: steps.changes.outputs.changed == 1
-        uses: swinton/commit@v2.0.0
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          files: |
-            tests.svg
-          commit-message: "update tests.svg"
-          ref: refs/heads/badges
+          token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
+          event-type: badge-update
+          client-payload: '{ "icon": "${{ steps.badge.outputs.icon }}", "icon_width": "${{ steps.badge.outputs.icon_width }}", "label": "${{ steps.badge.outputs.label }}", "label_color": "${{ steps.badge.outputs.label_color }}", "status": "${{ steps.badge.outputs.status }}", "status_color": "${{ steps.badge.outputs.status_color }}", "path": "${{ steps.badge.outputs.path }}" }'
   vulnerability_scanner:
     name: 'Vulnerability Scan'
     runs-on: ubuntu-latest
@@ -146,31 +133,13 @@ jobs:
           echo "::set-output name=label::Vulnerabilities"
           echo "::set-output name=label_color::555"
           echo "::set-output name=path::vulnerability.svg"
-      - name: 'Update badges'
+      - name: 'Update badge'
         if: github.event_name == 'push'
-        uses: emibcn/badge-action@v1.2.1
+        uses: peter-evans/repository-dispatch@v1.1.3
         with:
-          icon: ${{ steps.badge.outputs.icon }}
-          icon-width: ${{ steps.badge.outputs.icon_width }}
-          label: ${{ steps.badge.outputs.label }}
-          label-color: ${{ steps.badge.outputs.label_color }}
-          status: ${{ steps.badge.outputs.status }}
-          color: ${{ steps.badge.outputs.status_color }}
-          path: ${{ steps.badge.outputs.path }}
-      - name: "Check if there are changes"
-        id: changes
-        if: github.event_name == 'push'
-        uses: UnicornGlobal/has-changes-action@v1.0.12
-      - name: "Commit-back changes"
-        if: steps.changes.outputs.changed == 1
-        uses: swinton/commit@v2.0.0
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          files: |
-            vulnerability.svg
-          commit-message: "update vulnerability.svg"
-          ref: refs/heads/badges
+          token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
+          event-type: badge-update
+          client-payload: '{ "icon": "${{ steps.badge.outputs.icon }}", "icon_width": "${{ steps.badge.outputs.icon_width }}", "label": "${{ steps.badge.outputs.label }}", "label_color": "${{ steps.badge.outputs.label_color }}", "status": "${{ steps.badge.outputs.status }}", "status_color": "${{ steps.badge.outputs.status_color }}", "path": "${{ steps.badge.outputs.path }}" }'
   releaser:
     name: 'Release'
     runs-on: ubuntu-latest
@@ -179,7 +148,8 @@ jobs:
       (github.event_name == 'pull_request' &&
       github.event.action == 'closed' &&
       contains(github.event.pull_request.labels.*.name, 'skip-release') == false) ||
-      github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch'
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v2
@@ -187,10 +157,18 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=task_version::$(cat .tool-versions | grep -w task | cut -d ' ' -f2)"
-          if [[ github.event_name == 'pull_request' && "${LABELS[*]}" =~ "force-release" ]]; then
-            echo "::set-output name=force_release::true"
-          else
-            echo "::set-output name=force_release::false"
+          if [[ github.event_name == 'pull_request' ]]; then
+            if [[ "${LABELS[*]}" =~ "force-release" ]]; then
+              echo "::set-output name=force_release::true"
+            else
+              echo "::set-output name=force_release::false"
+            fi
+          elif [[ github.event_name == 'workflow_dispatch' ]]; then
+            if [[ "${{ github.event.inputs.force_release }}" == "true" ]]; then
+              echo "::set-output name=force_release::true"
+            else
+              echo "::set-output name=force_release::false"
+            fi
           fi
         env:
           LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
@@ -201,12 +179,38 @@ jobs:
         with:
           version: ${{ steps.vars.outputs.task_version }}
       - name: 'Docker Push'
+        id: docker_push
         run: |
           task docker:push
         env:
           GHCR_TOKEN: ${{ secrets.CI_GH_PAT_CONTAINER_REGISTRY_AUTH }}
           FORCE_RELEASE: ${{ steps.vars.outputs.force_release }}
+      - name: 'Set badge properties'
+        id: badge
+        if: github.event_name == 'push'
+        # icon is svg converted to base64 (https://base64.guru/converter/encode/image/svg)
+        run: |
+          if [[ "${{ steps.docker_push.outcome }}" == "success" ]]; then
+            echo "::set-output name=status::passing"
+            echo "::set-output name=status_color::green"
+          else
+            echo "::set-output name=status::failed"
+            echo "::set-output name=status_color::red"
+          fi
+          echo "::set-output name=icon::data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDIxLjAuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiCgkgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTAyNCAxMDI0OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+Cgkuc3Qwe2ZpbGw6IzAwOTFFMjt9Cgkuc3Qxe2ZpbGw6I0ZGRkZGRjt9Cjwvc3R5bGU+CjxnIGlkPSJHdWlkZXMiPgo8L2c+CjxnIGlkPSJJY29uIj4KCTxjaXJjbGUgY2xhc3M9InN0MCIgY3g9IjUxMiIgY3k9IjUxMiIgcj0iNTEyIi8+Cgk8cGF0aCBjbGFzcz0ic3QxIiBkPSJNODI3LjMsNDYxLjVjLTEuNi0xLjMtMTYuMS0xMi4yLTQ2LjctMTIuMmMtOC4xLDAtMTYuMiwwLjYtMjQuMiwyLjFjLTUuOS00MC43LTM5LjUtNjAuNS00MS02MS40bC04LjItNC44CgkJbC01LjQsNy44Yy02LjgsMTAuNS0xMS43LDIyLTE0LjYsMzQuMmMtNS41LDIzLjItMi4yLDQ1LDkuNiw2My42Yy0xNC4yLDcuOS0zNy4xLDkuOS00MS43LDEwSDI3N2MtOS45LDAtMTcuOSw4LTE3LjksMTcuOQoJCWMtMC40LDMzLjEsNS4yLDY2LDE2LjUsOTcuMWMxMywzNC4yLDMyLjQsNTkuMyw1Ny42LDc0LjdjMjguMiwxNy4zLDc0LjEsMjcuMiwxMjYuMiwyNy4yYzIzLjUsMC4xLDQ3LTIuMSw3MC4xLTYuNAoJCWMzMi4xLTUuOSw2My0xNy4xLDkxLjQtMzMuMmMyMy40LTEzLjYsNDQuNS0zMC44LDYyLjQtNTEuMWMyOS45LTMzLjksNDcuOC03MS43LDYxLjEtMTA1LjJoNS4zYzMyLjgsMCw1My0xMy4xLDY0LjEtMjQuMQoJCWM3LjQtNywxMy4yLTE1LjUsMTYuOS0yNWwyLjMtNi45TDgyNy4zLDQ2MS41eiBNMzEyLDQ4OS45aDUwLjdjMi40LDAsNC40LTIsNC40LTQuNHYtNDUuMWMwLTIuNC0yLTQuNC00LjQtNC41SDMxMgoJCWMtMi40LDAtNC40LDItNC40LDQuNHY0NS4yQzMwNy42LDQ4OCwzMDkuNiw0ODkuOSwzMTIsNDg5LjkgTTM4MS45LDQ4OS45aDUwLjdjMi40LDAsNC40LTIsNC40LTQuNHYtNDUuMWMwLTIuNC0yLTQuNC00LjQtNC41CgkJaC01MC43Yy0yLjUsMC00LjUsMi00LjUsNC41djQ1LjFDMzc3LjQsNDg4LDM3OS40LDQ4OS45LDM4MS45LDQ4OS45IE00NTIuNyw0OTBoNTAuN2MyLjQsMCw0LjQtMiw0LjQtNC40di00NS4xCgkJYzAtMi40LTItNC40LTQuNC00LjVoLTUwLjdjLTIuNCwwLTQuNCwyLTQuNCw0LjR2NDUuMkM0NDguMyw0ODgsNDUwLjMsNDg5LjksNDUyLjcsNDkwIE01MjIuOCw0OTBoNTAuN2MyLjQsMCw0LjQtMiw0LjUtNC40di00NS4xCgkJYzAtMi41LTItNC41LTQuNS00LjVoLTUwLjdjLTIuNCwwLTQuNCwyLTQuNCw0LjR2NDUuMkM1MTguNCw0ODgsNTIwLjMsNDkwLDUyMi44LDQ5MCBNMzgxLjgsNDI1aDUwLjdjMi40LDAsNC40LTIsNC40LTQuNXYtNDUuMQoJCWMwLTIuNC0yLTQuNC00LjQtNC40aC01MC43Yy0yLjUsMC00LjQsMi00LjUsNC40djQ1LjFDMzc3LjQsNDIzLDM3OS40LDQyNSwzODEuOCw0MjUgTTQ1Mi43LDQyNWg1MC43YzIuNCwwLDQuNC0yLDQuNC00LjV2LTQ1LjEKCQljMC0yLjQtMi00LjQtNC40LTQuNGgtNTAuN2MtMi40LDAtNC40LDItNC40LDQuNHY0NS4xQzQ0OC4zLDQyMyw0NTAuMyw0MjUsNDUyLjcsNDI1IE01MjIuOCw0MjVoNTAuN2MyLjUsMCw0LjQtMiw0LjUtNC41di00NS4xCgkJYzAtMi41LTItNC40LTQuNS00LjRoLTUwLjdjLTIuNCwwLTQuNCwyLTQuNCw0LjR2NDUuMUM1MTguNCw0MjMsNTIwLjMsNDI1LDUyMi44LDQyNSBNNTIyLjgsMzYwLjFoNTAuN2MyLjUsMCw0LjUtMiw0LjUtNC41di00NS4yCgkJYzAtMi40LTItNC40LTQuNS00LjRoLTUwLjdjLTIuNCwwLTQuNCwyLTQuNCw0LjR2NDUuMkM1MTguNCwzNTguMSw1MjAuMywzNjAuMSw1MjIuOCwzNjAuMSBNNTkzLjQsNDkwaDUwLjdjMi40LDAsNC40LTIsNC40LTQuNAoJCXYtNDUuMWMwLTIuNS0yLTQuNC00LjQtNC41aC01MC43Yy0yLjQsMC00LjQsMi00LjQsNC40djQ1LjJDNTg5LDQ4OCw1OTEsNDkwLDU5My40LDQ5MCIvPgo8L2c+Cjwvc3ZnPgo="
+          echo "::set-output name=icon_width::20"
+          echo "::set-output name=label::Build"
+          echo "::set-output name=label_color::555"
+          echo "::set-output name=path::build.svg"
+      - name: 'Update badge'
+        if: github.event_name == 'push'
+        uses: peter-evans/repository-dispatch@v1.1.3
+        with:
+          token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
+          event-type: badge-update
+          client-payload: '{ "icon": "${{ steps.badge.outputs.icon }}", "icon_width": "${{ steps.badge.outputs.icon_width }}", "label": "${{ steps.badge.outputs.label }}", "label_color": "${{ steps.badge.outputs.label_color }}", "status": "${{ steps.badge.outputs.status }}", "status_color": "${{ steps.badge.outputs.status_color }}", "path": "${{ steps.badge.outputs.path }}" }'
       - name: 'Notify about the build'
+        if: steps.docker_push.outcome == 'success'
         uses: peter-evans/repository-dispatch@v1.1.3
         with:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}

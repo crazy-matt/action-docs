@@ -1,6 +1,6 @@
 # actions-docs
 
-[![Build](https://github.com/crazy-matt/action-docs/actions/workflows/docker_builder.yml/badge.svg)](https://github.com/crazy-matt/action-docs/actions/workflows/docker_builder.yml)
+[![Build](https://github.com/crazy-matt/action-docs/blob/badges/build.svg)](https://github.com/crazy-matt/action-docs/actions/workflows/docker_builder.yml)
 ![Tests](https://github.com/crazy-matt/action-docs/blob/badges/tests.svg)
 ![Vulnerabilities](https://github.com/crazy-matt/action-docs/blob/badges/vulnerability.svg)
 
@@ -33,17 +33,17 @@ A dockerized [action-docs](https://github.com/npalm/action-docs) wrapper.
 ### Generate an action documentation
 
 ```shell
-docker run -it --rm -v $PWD:/work ghcr.io/crazy-matt/action-docs:latest
-docker run -it --rm -v $PWD:/work ghcr.io/crazy-matt/action-docs:latest <command>
+docker run -t --rm -v $PWD:/work ghcr.io/crazy-matt/action-docs:latest
+docker run -t --rm -v $PWD:/work ghcr.io/crazy-matt/action-docs:latest <command>
 ```
 
 ### Help
 
 ```shell
-docker run -it --rm -v $PWD:/work ghcr.io/crazy-matt/action-docs:latest --help
+docker run -t --rm -v $PWD:/work ghcr.io/crazy-matt/action-docs:latest --help
 ```
 
-> For any other `action-docs` command, check-out the initial [documentation](https://github.com/npalm/action-docs#readme).
+> For any other `action-docs` command, check-out the [documentation](https://github.com/npalm/action-docs#readme).
 
 ## Development
 
