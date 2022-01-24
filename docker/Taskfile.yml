@@ -3,6 +3,7 @@
 version: '3'
 
 vars:
+  AUTHOR: 'crazy-matt'
   BUILD_DATE:
     sh: date -u +'%Y-%m-%dT%H:%M:%SZ'
   BUILD_DATE_TAG:
@@ -17,7 +18,7 @@ vars:
   GIT_REPO_LATEST_RELEASE:
     sh: curl -s "https://api.github.com/repos/{{.GIT_REPO}}/releases/latest" | grep "tag_name" | cut -d '"' -f4
   GIT_REPO_HTTP_URL:
-    sh: echo "https://github.com/$(git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##')"
+    sh: echo "https://github.com/$(git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##' | sed -e 's#//github.com/*##')"
   GIT_SHORT_SHA:
     sh: git rev-parse --short HEAD
   DOCKER_IMAGE_NAME: 'ghcr.io/{{.GIT_REPO}}'
