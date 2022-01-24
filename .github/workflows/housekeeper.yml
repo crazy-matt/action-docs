@@ -1,0 +1,79 @@
+name: "Housekeeper"
+
+on:
+  push:
+    branches:
+      - "main"
+  schedule:
+    # Run every monday at 12 pm
+    - cron: "0 12 * * 1"
+
+jobs:
+  initialise_repo:
+    name: "Initialiser"
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: "Apply Labels"
+        uses: crazy-max/ghaction-github-labeler@v3.1.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          yaml-file: .github/labels.yml
+  create_required_branches:
+    name: "Branch Creator"
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - run: git branch --remotes
+      - name: "Create branch if needed"
+        id: creation
+        run: |
+          echo "::set-output name=changed::false"
+          if [[ -z "$(git branch --remotes | { grep --extended-regexp "^[[:space:]]+origin/badges$" || true; })" ]]; then
+            echo "::set-output name=changed::true"
+            git checkout --orphan badges
+            # Unstage all the files in your working tree
+            git rm --cached $(git ls-files)
+            echo '# Badges branch' > README.md
+          fi
+      - name: "Commit-back changes"
+        if: steps.creation.outputs.changed == 'true'
+        uses: swinton/commit@v2.0.0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            README.md
+          commit-message: "initialise the badges branch"
+          ref: refs/heads/badges
+  cleanup_branches:
+    name: "Branch Cleaner"
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Manage Stale Branches"
+        id: branch_cleaner
+        uses: crazy-matt/manage-stale-branches@1.0.0
+        with:
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          stale_older_than: 180
+          suggestions_older_than: 210
+          dry_run: false
+          archive_stale: true
+          excluded_branches: |
+            origin/main
+            origin/master
+            origin/badges
+      - name: "Trigger the Notifier"
+        if: github.event_name == 'schedule' && steps.branch_cleaner.outputs.message != ''
+        uses: peter-evans/repository-dispatch@v1.1.3
+        with:
+          token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
+          event-type: slack-notification
+          client-payload: '{ "type": "housekeeping", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "color": "#2EB67D", "title": "🧹 ${{ github.repository }} Housekeeping", "message": "${{ steps.branch_cleaner.outputs.message }}" }'
