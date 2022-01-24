@@ -114,10 +114,8 @@ tasks:
     cmds:
     - echo "📒 {{.TASK}}"
     - echo "${GHCR_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
-    - docker tag "{{.DOCKER_IMAGE}}" "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}"
-    - docker tag "{{.DOCKER_IMAGE}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}"
-    - docker tag "{{.DOCKER_IMAGE}}" "ghcr.io/{{.GIT_REPO}}:latest"
-    - docker push "{{.DOCKER_IMAGE}}" --all-tags
+    - echo "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}" "ghcr.io/{{.GIT_REPO}}:latest" | xargs -n 1 docker tag "{{.DOCKER_IMAGE}}"
+    - echo "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}" "ghcr.io/{{.GIT_REPO}}:latest" | xargs -n 1 docker push
     preconditions:
     - sh: '[ -n "${GHCR_TOKEN}" ]'
       msg: 'You need to export a GitHub Token with "write package" permission as an environment variable GHCR_TOKEN'
