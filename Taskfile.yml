@@ -37,7 +37,7 @@ tasks:
     run: once
     cmds:
     - echo "📒 {{.TASK}}"
-    - mkdir -p sarif-reports
+    - if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then mkdir -p sarif-reports; fi
     - task: security:filesystem:grype
     - task: security:secret:gitleaks
 

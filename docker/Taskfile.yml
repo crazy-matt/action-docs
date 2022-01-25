@@ -146,7 +146,7 @@ tasks:
     deps: [dependencies]
     cmds:
     - echo "📒 {{.TASK}}"
-    - mkdir -p sarif-reports
+    - if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then mkdir -p sarif-reports; fi
     - task: security:image:snyk
     - task: security:image:dockle
     - task: security:image:trivy

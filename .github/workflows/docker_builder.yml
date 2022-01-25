@@ -92,6 +92,9 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=task_version::$(cat ${{ github.workspace }}/.tool-versions | grep -w task | cut -d ' ' -f2)"
+          if [[ ${{ github.event_name }} == 'push' && ${{ github.ref }} == "refs/heads/${{ github.event.repository.default_branch }}" ]]; then
+            echo "::set-output name=commmit_info:: [Push on Main]"
+          fi
       - name: 'Install asdf dependencies'
         uses: asdf-vm/actions/setup@v1
       - name: 'Install Task'
@@ -148,6 +151,14 @@ jobs:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
           event-type: badge-update
           client-payload: '{ "icon": "${{ steps.badge.outputs.icon }}", "icon_width": "${{ steps.badge.outputs.icon_width }}", "label": "${{ steps.badge.outputs.label }}", "label_color": "${{ steps.badge.outputs.label_color }}", "status": "${{ steps.badge.outputs.status }}", "status_color": "${{ steps.badge.outputs.status_color }}", "path": "${{ steps.badge.outputs.path }}" }'
+      - name: "Notify"
+        if: failure()
+        continue-on-error: true
+        uses: peter-evans/repository-dispatch@v1.1.3
+        with:
+          token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
+          event-type: slack-notification
+          client-payload: '{ "type": "alert", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "color": "#FF0000", "title": "🚨 ${{ github.repository }} Vulnerability${{ steps.vars.outputs.commmit_info }}", "message": "Check https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" }'
   releaser:
     name: 'Release'
     runs-on: ubuntu-latest
