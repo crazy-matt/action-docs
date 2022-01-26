@@ -23,6 +23,18 @@ defaults:
     shell: bash
 
 jobs:
+  approver:
+    name: 'Test'
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'pull_request' && github.event.action != 'closed') ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' ||
+      github.event_name == 'push'
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+
   releaser:
     name: 'Release'
     runs-on: ubuntu-latest
