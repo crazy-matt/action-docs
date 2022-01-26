@@ -23,7 +23,6 @@ defaults:
     shell: bash
 
 jobs:
-
   releaser:
     name: 'Release'
     runs-on: ubuntu-latest
