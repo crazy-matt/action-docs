@@ -210,7 +210,7 @@ jobs:
       - name: 'Create Tag'
         uses: negz/create-tag@v1
         with:
-          version: ${{ steps.docker_push.build_version }}
+          version: ${{ steps.docker_push.outputs.build_version }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Set badge properties'
         id: badge
