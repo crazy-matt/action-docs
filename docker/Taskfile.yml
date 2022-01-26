@@ -2,6 +2,8 @@
 # A modern replacement of Makefile
 version: '3'
 
+output: 'group'
+
 vars:
   AUTHOR: 'crazy-matt'
   BUILD_DATE:
@@ -16,7 +18,7 @@ vars:
   GIT_REPO:
     sh: git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##' -e 's#//github.com/*##'
   GIT_REPO_LATEST_RELEASE:
-    sh: curl -s "https://api.github.com/repos/{{.GIT_REPO}}/releases/latest" | grep "tag_name" | cut -d '"' -f4
+    sh: git describe --tags --abbrev=0 || true
   GIT_REPO_HTTP_URL:
     sh: echo "https://github.com/$(git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##' | sed -e 's#//github.com/*##')"
   GIT_SHORT_SHA:
@@ -62,6 +64,11 @@ tasks:
     - echo "org.opencontainers.image.revision":" {{.GIT_SHORT_SHA}}"
     - echo "org.opencontainers.image.source":"   {{.GIT_REPO_HTTP_URL}}"
     - echo "Task version":"                      {{.TASK_VERSION}}"
+
+  get:build_version:
+    desc: Output the build version
+    cmds:
+    - echo "{{.BUILD_VERSION}}"
 
   build:
     desc: Build Docker image

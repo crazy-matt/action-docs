@@ -202,10 +202,16 @@ jobs:
         id: docker_push
         run: |
           task docker:push
+          echo "::set-output name=build_version::$(task docker:get:build_version)"
         env:
           GHCR_TOKEN: ${{ secrets.CI_GH_PAT_CONTAINER_REGISTRY_AUTH }}
           FORCE_RELEASE: ${{ steps.vars.outputs.force_release }}
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: 'Create Tag'
+        uses: negz/create-tag@v1
+        with:
+          version: ${{ steps.docker_push.build_version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Set badge properties'
         id: badge
         if: always()

@@ -2,6 +2,8 @@
 # A modern replacement of Makefile
 version: '3'
 
+output: 'group'
+
 includes:
   docker:
     taskfile: ./docker/Taskfile.yml

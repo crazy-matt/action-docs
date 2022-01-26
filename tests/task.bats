@@ -49,4 +49,8 @@ function setup() {
   SEMVER1="1.0.0" SEMVER2="1.0.1" FORCE="false" run task semver1_greater_than_semver2
   assert_success
   assert_output "false"
+
+  SEMVER1="1.0.0" SEMVER2= FORCE= run task semver1_greater_than_semver2
+  assert_success
+  assert_output "true"
 }
