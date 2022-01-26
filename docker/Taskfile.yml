@@ -18,7 +18,7 @@ vars:
   GIT_REPO:
     sh: git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##' -e 's#//github.com/*##'
   GIT_REPO_LATEST_RELEASE:
-    sh: git describe --tags --abbrev=0 || true
+    sh: git describe --tags --abbrev=0 2>/dev/null || true
   GIT_REPO_HTTP_URL:
     sh: echo "https://github.com/$(git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##' | sed -e 's#//github.com/*##')"
   GIT_SHORT_SHA:
@@ -123,6 +123,7 @@ tasks:
     - echo "📒 {{.TASK}}"
     - echo SEMVER1="{{.BUILD_VERSION}}" SEMVER2="{{.GIT_REPO_LATEST_RELEASE}}" FORCE="${FORCE_RELEASE}"
     - SEMVER1="{{.BUILD_VERSION}}" SEMVER2="{{.GIT_REPO_LATEST_RELEASE}}" FORCE="${FORCE_RELEASE}" task semver1_greater_than_semver2
+    - exit 1
     # - echo "${GHCR_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
     # - echo "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}" "ghcr.io/{{.GIT_REPO}}:latest" | xargs -n 1 docker tag "{{.DOCKER_IMAGE}}"
     # - echo "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}" "ghcr.io/{{.GIT_REPO}}:latest" "{{.DOCKER_IMAGE}}" | xargs -n 1 docker push
