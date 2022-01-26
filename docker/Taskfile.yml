@@ -121,12 +121,9 @@ tasks:
       vars: { CALLER: 'push' }
     cmds:
     - echo "📒 {{.TASK}}"
-    - echo SEMVER1="{{.BUILD_VERSION}}" SEMVER2="{{.GIT_REPO_LATEST_RELEASE}}" FORCE="${FORCE_RELEASE}"
-    - SEMVER1="{{.BUILD_VERSION}}" SEMVER2="{{.GIT_REPO_LATEST_RELEASE}}" FORCE="${FORCE_RELEASE}" task semver1_greater_than_semver2
-    - exit 1
-    # - echo "${GHCR_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
-    # - echo "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}" "ghcr.io/{{.GIT_REPO}}:latest" | xargs -n 1 docker tag "{{.DOCKER_IMAGE}}"
-    # - echo "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}" "ghcr.io/{{.GIT_REPO}}:latest" "{{.DOCKER_IMAGE}}" | xargs -n 1 docker push
+    - echo "${GHCR_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
+    - echo "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}" "ghcr.io/{{.GIT_REPO}}:latest" | xargs -n 1 docker tag "{{.DOCKER_IMAGE}}"
+    - echo "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}" "ghcr.io/{{.GIT_REPO}}:latest" "{{.DOCKER_IMAGE}}" | xargs -n 1 docker push
     preconditions:
     - sh: '[ -n "${GHCR_TOKEN}" ]'
       msg: 'You need to export a GitHub Token with "write package" permission as an environment variable GHCR_TOKEN'
@@ -192,7 +189,7 @@ tasks:
     - echo "📒 {{.TASK}}"
     - plugin_name="trivy"; asdf plugin add "${plugin_name}" || true; asdf install "${plugin_name}" $(asdf current "${plugin_name}" | tr -s ' ' | cut -d' ' -f2)
     - trivy image --ignorefile {{.RELATIVE_PATH_TO_ROOT}}/.security/cis-cve-ignore --format table {{.DOCKER_IMAGE}}
-    # If task is called passing an arg sarif or --ssarif, then a sarif report is created.
+    # If task is called passing the arg sarif ('task <task name> -- sarif'), then a sarif report is created.
     # We use httpie-go as a common tool to download or call APIs (much more convenient than the outdated curl)
     - |
       if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then

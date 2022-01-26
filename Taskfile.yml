@@ -49,6 +49,7 @@ tasks:
     - echo "📒 {{.TASK}}"
     - plugin_name="grype"; asdf plugin add "${plugin_name}" || true; asdf install "${plugin_name}" $(asdf current "${plugin_name}" | tr -s ' ' | cut -d' ' -f2)
     - grype "dir:." --output table --config .security/grype.yaml
+    # # If task is called passing the arg sarif ('task <task name> -- sarif'), then a sarif report is created.
     # - |
     #   if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then
     #     grype "dir:." --output template --template "/tmp/grype-sarif.tpl" --file "sarif-reports/grype-report.sarif" --config .security/grype.yaml
