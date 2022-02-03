@@ -194,7 +194,7 @@ jobs:
         run: |
           task docker:push
           echo "::set-output name=build_version::$(task docker:get:build_version)"
-          echo "::set-output name=release_needed::$(task release_needed)"
+          echo "::set-output name=release_needed::$(task docker:release_needed)"
         env:
           GHCR_TOKEN: ${{ secrets.CI_GH_PAT_CONTAINER_REGISTRY_AUTH }}
           FORCE_RELEASE: ${{ steps.vars.outputs.force_release }}
