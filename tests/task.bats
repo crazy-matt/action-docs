@@ -14,7 +14,7 @@ function setup() {
 # }
 
 @test "task semver1_greater_than_semver2" {
-  SEMVER1="1.0.1" SEMVER2="1.0.0"  run task semver1_greater_than_semver2
+  SEMVER1="1.0.1" SEMVER2="1.0.0" run task semver1_greater_than_semver2
   assert_success
   assert_output "true"
   

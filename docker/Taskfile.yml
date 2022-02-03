@@ -150,15 +150,16 @@ tasks:
   release_needed:
     desc: Return true if a binary new version has been released and requires a new docker image
     cmds:
+    - |
+      echo "++++++----- {{.BUILD_VERSION}} -----++++++"
+      echo "++++++----- {{.GIT_REPO_LATEST_RELEASE}} -----++++++"
+      echo "++++++----- ${FORCE_RELEASE} -----++++++"
     - SEMVER1="{{.BUILD_VERSION}}" SEMVER2="{{.GIT_REPO_LATEST_RELEASE}}" FORCE="${FORCE_RELEASE}" task semver1_greater_than_semver2
 
   semver1_greater_than_semver2:
     desc: Test if SEMVER1 is greater than SEMVER2
     cmds:
     - |
-      echo "++++++----- {{.SEMVER1}} -----++++++"
-      echo "++++++----- {{.SEMVER2}} -----++++++"
-      echo "++++++----- {{.FORCE}} -----++++++"
       if [[ "{{.SEMVER1}}" != "{{.SEMVER2}}" && "$(printf "{{.SEMVER1}}\n{{.SEMVER2}}\n" | sort -V | head -n 1)" == "{{.SEMVER2}}" ]] || [[ "{{.FORCE}}" == "true" ]]; then
         echo "true"
       else
