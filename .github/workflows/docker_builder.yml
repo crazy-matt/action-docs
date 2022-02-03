@@ -176,18 +176,10 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=task_version::$(cat .tool-versions | grep -w task | cut -d ' ' -f2)"
-          if [[ github.event_name == 'pull_request' ]]; then
-            if [[ "${LABELS[*]}" =~ "force-release" ]]; then
-              echo "::set-output name=force_release::true"
-            else
-              echo "::set-output name=force_release::false"
-            fi
-          elif [[ github.event_name == 'workflow_dispatch' ]]; then
-            if [[ "${{ github.event.inputs.force_release }}" == "true" ]]; then
-              echo "::set-output name=force_release::true"
-            else
-              echo "::set-output name=force_release::false"
-            fi
+          if [[ github.event_name == 'pull_request' && "${LABELS[*]}" =~ "force-release" ]]; then
+            echo "::set-output name=force_release::true"
+          elif [[ github.event_name == 'workflow_dispatch' && "${{ github.event.inputs.force_release }}" == 'true' ]]; then
+            echo "::set-output name=force_release::true"
           fi
         env:
           LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
@@ -202,19 +194,20 @@ jobs:
         run: |
           task docker:push
           echo "::set-output name=build_version::$(task docker:get:build_version)"
+          echo "::set-output name=release_needed::$(task release_needed)"
         env:
           GHCR_TOKEN: ${{ secrets.CI_GH_PAT_CONTAINER_REGISTRY_AUTH }}
           FORCE_RELEASE: ${{ steps.vars.outputs.force_release }}
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: 'Create Tag'
         if: steps.docker_push.outcome == 'success'
-        uses: negz/create-tag@v1
-        with:
-          version: ${{ steps.docker_push.outputs.build_version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.docker_push.outputs.build_version }}"
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: 'Set badge properties'
         id: badge
-        if: always()
+        if: always() && steps.docker_push.outputs.release_needed == 'true'
         # icon is svg converted to base64 (https://base64.guru/converter/encode/image/svg)
         run: |
           if [[ "${{ steps.docker_push.outcome }}" == "success" ]]; then
@@ -230,7 +223,7 @@ jobs:
           echo "::set-output name=label_color::555"
           echo "::set-output name=path::build.svg"
       - name: 'Update badge'
-        if: always()
+        if: always() && steps.docker_push.outputs.release_needed == 'true'
         uses: peter-evans/repository-dispatch@v1.1.3
         with:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
@@ -238,12 +231,12 @@ jobs:
           client-payload: '{ "icon": "${{ steps.badge.outputs.icon }}", "icon_width": "${{ steps.badge.outputs.icon_width }}", "label": "${{ steps.badge.outputs.label }}", "label_color": "${{ steps.badge.outputs.label_color }}", "status": "${{ steps.badge.outputs.status }}", "status_color": "${{ steps.badge.outputs.status_color }}", "path": "${{ steps.badge.outputs.path }}" }'
       - name: 'Get GHCR and notification details'
         id: details
-        if: steps.docker_push.outcome == 'failure'
+        if: always() && steps.docker_push.outcome == 'failure' && steps.docker_push.outputs.release_needed == 'true'
         run: |
           echo "::set-output name=ghcr_url::https://github.com/${GITHUB_REPOSITORY}/pkgs/container/${GITHUB_REPOSITORY#*/}"
           echo "::set-output name=workflow_run_url::https://github.com/${GITHUB_REPOSITORY}/actions/runs/${{ github.run_id }}"
       - name: 'Notify about the build failures'
-        if: steps.docker_push.outcome == 'failure'
+        if: always() && steps.docker_push.outcome == 'failure' && steps.docker_push.outputs.release_needed == 'true'
         uses: peter-evans/repository-dispatch@v1.1.3
         with:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
