@@ -120,6 +120,7 @@ tasks:
     - task: security
       vars: { CALLER: 'push' }
     cmds:
+    - echo "---- ==== $(task release_needed) ==== ----"
     - echo "📒 {{.TASK}}"
     - echo "${GHCR_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
     - echo "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}" "ghcr.io/{{.GIT_REPO}}:latest" | xargs -n 1 docker tag "{{.DOCKER_IMAGE}}"
