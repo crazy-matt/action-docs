@@ -2,8 +2,6 @@
 # A modern replacement of Makefile
 version: '3'
 
-output: 'group'
-
 vars:
   AUTHOR: 'crazy-matt'
   BUILD_DATE:
@@ -164,12 +162,20 @@ tasks:
     desc: Run all security scanners
     run: once
     deps: [dependencies]
+    vars:
+      CALLER: '{{default "self" .CALLER}}'
     cmds:
     - echo "📒 {{.TASK}}"
-    - if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then mkdir -p sarif-reports; fi
-    - task: security:image:snyk
-    - task: security:image:dockle
-    - task: security:image:trivy
+    - |
+      if [[ "${GITHUB_ACTIONS}" != 'true' ]] || [[ "${GITHUB_ACTIONS}" == 'true' && {{.CALLER}} != 'push' ]]; then
+        if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then mkdir -p sarif-reports; fi
+        task security:image:snyk
+        task security:image:dockle
+        task security:image:trivy
+        echo -e "✅ You're safe\n"
+      else
+        echo -e "🚫 Skipping scans as already run in a previous GitHub Action job\n"
+      fi
 
   security:image:snyk:
     desc: Run Snyk tests
