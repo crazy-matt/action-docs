@@ -55,15 +55,17 @@ tasks:
     #     grype "dir:." --output template --template "/tmp/grype-sarif.tpl" --file "sarif-reports/grype-report.sarif" --config .security/grype.yaml
     #   fi
 
+  # Remove the --no-git flag if you want gitleaks to make a deep scan on the entire history of the repo
   security:secret:gitleaks:
     desc: Run Gitleaks
     cmds:
     - echo "📒 {{.TASK}}"
     - |
+      [[ "${GITHUB_ACTIONS}" == 'true' ]] && redact="--redact"
       if [[ "{{.CLI_ARGS}}" == *"sarif"* ]]; then
-        docker run --rm --volume "{{.REPO_ABS_ROOT_PATH}}:/work" zricethezav/gitleaks:latest detect -v --redact --report-format "sarif" --report-path "sarif-reports/gitleaks-report.sarif" --source="/work" --config /work/.security/credscan-config.toml
+        docker run --rm --volume "{{.REPO_ABS_ROOT_PATH}}:/work" zricethezav/gitleaks:latest detect --no-git --exit-code 1 -v ${redact} --report-format "sarif" --report-path "sarif-reports/gitleaks-report.sarif" --source="/work" --config /work/.security/credscan-config.toml
       else
-        docker run --rm --volume "{{.REPO_ABS_ROOT_PATH}}:/work" zricethezav/gitleaks:latest detect -v --redact --source="/work" --config /work/.security/credscan-config.toml
+        docker run --rm --volume "{{.REPO_ABS_ROOT_PATH}}:/work" zricethezav/gitleaks:latest detect --no-git --exit-code 1 -v ${redact} --source="/work" --config /work/.security/credscan-config.toml
       fi
 
   lint:

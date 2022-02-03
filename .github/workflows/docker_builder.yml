@@ -192,7 +192,7 @@ jobs:
       - name: 'Docker Push'
         id: docker_push
         run: |
-          task docker:debug
+          task docker:debug:resolve_vars
           task docker:push
           echo "::set-output name=build_version::$(task docker:get:build_version)"
           echo "::set-output name=release_needed::$(task docker:release_needed)"
