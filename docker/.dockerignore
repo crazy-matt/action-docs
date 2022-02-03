@@ -1,10 +1,5 @@
 Dockerfile
 *.Dockerfile
-*.dockerignore
-!.dockerignore
-*entrypoint.sh
-
-**/docker-compose*.yml
 
 Taskfile.yml
-**/.task**
+**/.task***
