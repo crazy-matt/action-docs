@@ -14,16 +14,15 @@ function setup() {
 # }
 
 @test "image entrypoint" {
-  run bash -c "docker inspect ghcr.io/crazy-matt/action-docs:1.0.3 | jq -r '.[].Config.Entrypoint[]'"
+  run bash -c "docker inspect ${IMAGE} | jq -r '.[].Config.Entrypoint[]'"
   assert_success
-  assert_output "/usr/local/bin/action-docs"
+  assert_output "/entrypoint.sh"
 }
 
 @test "version installed" {
-  echo "$BUILD_VERSION"
   run docker run -t --rm ${IMAGE} "--version"
   assert_success
-  assert_line --index 0 --partial "$BUILD_VERSION"
+  assert_line --index 0 --partial "${BUILD_VERSION}"
 }
 
 @test "helper" {

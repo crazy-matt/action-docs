@@ -104,7 +104,7 @@ tasks:
         echo -e "✅ Some Taskfile tasks validated\n"
 
         export BUILD_VERSION="{{.BUILD_VERSION}}" IMAGE="{{.DOCKER_IMAGE}}"
-        {{.RELATIVE_PATH_TO_ROOT}}/tests/libs/bats-core/bin/bats {{.RELATIVE_PATH_TO_ROOT}}/tests/action-docs.bats
+        {{.RELATIVE_PATH_TO_ROOT}}/tests/libs/bats-core/bin/bats {{.RELATIVE_PATH_TO_ROOT}}/tests/docker.bats
         echo -e "📦 Image validated\n"
       else
         echo -e "🚫 Skipping tests as already run in a previous GitHub Action job\n"
