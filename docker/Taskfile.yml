@@ -156,6 +156,9 @@ tasks:
     desc: Test if SEMVER1 is greater than SEMVER2
     cmds:
     - |
+      echo "++++++----- {{.SEMVER1}} -----++++++"
+      echo "++++++----- {{.SEMVER2}} -----++++++"
+      echo "++++++----- {{.FORCE}} -----++++++"
       if [[ "{{.SEMVER1}}" != "{{.SEMVER2}}" && "$(printf "{{.SEMVER1}}\n{{.SEMVER2}}\n" | sort -V | head -n 1)" == "{{.SEMVER2}}" ]] || [[ "{{.FORCE}}" == "true" ]]; then
         echo "true"
       else
