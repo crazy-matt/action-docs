@@ -119,7 +119,6 @@ tasks:
       vars: { CALLER: 'push' }
     - task: security
       vars: { CALLER: 'push' }
-    - echo "---- ==== $(task release_needed) ==== ----"
     - echo "📒 {{.TASK}}"
     - echo "${GHCR_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
     - echo "ghcr.io/{{.GIT_REPO}}:{{.GIT_SHORT_SHA}}" "ghcr.io/{{.GIT_REPO}}:{{.BUILD_DATE_TAG}}" "ghcr.io/{{.GIT_REPO}}:latest" | xargs -n 1 docker tag "{{.DOCKER_IMAGE}}"
@@ -149,10 +148,6 @@ tasks:
   release_needed:
     desc: Return true if a binary new version has been released and requires a new docker image
     cmds:
-    - |
-      echo "++++++----- {{.BUILD_VERSION}} -----++++++"
-      echo "++++++----- {{.GIT_REPO_LATEST_RELEASE}} -----++++++"
-      echo "++++++----- ${FORCE_RELEASE} -----++++++"
     - SEMVER1="{{.BUILD_VERSION}}" SEMVER2="{{.GIT_REPO_LATEST_RELEASE}}" FORCE="${FORCE_RELEASE}" task semver1_greater_than_semver2
 
   semver1_greater_than_semver2:
