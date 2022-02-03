@@ -114,12 +114,11 @@ tasks:
 
   push:
     desc: Push image to registry
-    deps:
+    cmds:
     - task: tests
       vars: { CALLER: 'push' }
     - task: security
       vars: { CALLER: 'push' }
-    cmds:
     - echo "---- ==== $(task release_needed) ==== ----"
     - echo "📒 {{.TASK}}"
     - echo "${GHCR_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
