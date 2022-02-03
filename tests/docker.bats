@@ -16,7 +16,7 @@ function setup() {
 @test "image entrypoint" {
   run bash -c "docker inspect ${IMAGE} | jq -r '.[].Config.Entrypoint[]'"
   assert_success
-  assert_output "/entrypoint.sh"
+  assert_output "/usr/local/bin/action-docs"
 }
 
 @test "version installed" {
