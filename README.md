@@ -1,4 +1,4 @@
-# actions-docs
+# actions-docs  <!-- omit in toc -->
 
 [![Build](https://github.com/crazy-matt/action-docs/blob/badges/build.svg)](https://github.com/crazy-matt/action-docs/actions/workflows/docker_builder.yml)
 [![Tests](https://github.com/crazy-matt/action-docs/blob/badges/tests.svg)](https://github.com/crazy-matt/action-docs/actions/workflows/docker_builder.yml)
@@ -9,18 +9,17 @@ A dockerized [action-docs](https://github.com/npalm/action-docs) wrapper.
 <details open="open">
 <summary>Table of Contents</summary>
 
-- [actions-docs](#actions-docs)
-  - [Build History](#build-history)
-  - [Usage](#usage)
-    - [Generate an action documentation](#generate-an-action-documentation)
-    - [Help](#help)
-  - [Development](#development)
-    - [Requirements](#requirements)
-      - [Docker](#docker)
-      - [asdf](#asdf)
-      - [Task](#task)
-      - [CI/CD Pipeline](#cicd-pipeline)
-  - [License](#license)
+- [Build History](#build-history)
+- [Usage](#usage)
+  - [Generate an action documentation](#generate-an-action-documentation)
+  - [Help](#help)
+- [Development](#development)
+  - [Requirements](#requirements)
+    - [Docker](#docker)
+    - [asdf](#asdf)
+    - [Task](#task)
+    - [Dependencies](#dependencies)
+    - [CI/CD Pipeline](#cicd-pipeline)
 
 </details>
 
@@ -90,6 +89,6 @@ Run `task dependencies`.
 
 This [GitHub workflow](.github/workflows/docker_builder.yml) ensure a daily check of the [action-docs](https://github.com/npalm/action-docs) [releases](https://github.com/npalm/action-docs/releases) and automatically build the docker image.
 
-## License
+## License  <!-- omit in toc -->
 
 Licensed under the [Apache License 2.0](LICENSE)
