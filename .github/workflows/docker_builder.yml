@@ -89,6 +89,12 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v2
+      - name: 'Cache Grype Database'
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/grype-cache
+          key: grype
       - name: 'Set Job Vars'
         id: vars
         run: |
@@ -109,6 +115,7 @@ jobs:
           task security -- sarif
           task docker:security -- sarif
         env:
+          GRYPE_DB_CACHE_DIR: ~/grype-cache
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: 'Upload SARIF reports'
         if: always()
@@ -123,6 +130,8 @@ jobs:
           path: "./"
           fail-build: true
           acs-report-enable: true
+        env:
+          GRYPE_DB_CACHE_DIR: ~/grype-cache
       - name: 'Upload SARIF Grype reports'
         if: always()
         continue-on-error: true
