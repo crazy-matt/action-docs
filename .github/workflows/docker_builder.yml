@@ -213,7 +213,7 @@ jobs:
           FORCE_RELEASE: ${{ steps.vars.outputs.force_release }}
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: 'Create Tag'
-        if: steps.docker_push.outcome == 'success'
+        if: steps.docker_push.outputs.release_needed == 'true'
         run: |
           gh release create "${{ steps.docker_push.outputs.build_version }}"
         env:
