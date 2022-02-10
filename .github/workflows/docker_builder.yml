@@ -46,8 +46,14 @@ jobs:
         uses: arduino/setup-task@v1
         with:
           version: ${{ steps.vars.outputs.task_version }}
+      - name: 'Task Queries'
+        id: task_queries
+        run: |
+          set -e
+          echo "::set-output name=release_needed::$(task docker:release_needed)"
       - name: 'Test'
         id: test
+        if: steps.task_queries.outputs.release_needed == 'true'
         run: |
           set -e
           task lint
@@ -56,7 +62,7 @@ jobs:
           GHCR_TOKEN: ${{ secrets.CI_GH_PAT_CONTAINER_REGISTRY_AUTH }}
       - name: 'Set badge properties'
         id: badge
-        if: always()
+        if: always() && steps.task_queries.outputs.release_needed == 'true'
         # icon is svg converted to base64 (https://base64.guru/converter/encode/image/svg)
         run: |
           if [[ "${{ steps.test.outcome }}" == "success" ]]; then
@@ -72,7 +78,7 @@ jobs:
           echo "::set-output name=label_color::555"
           echo "::set-output name=path::tests.svg"
       - name: 'Update badge'
-        if: always()
+        if: always() && steps.task_queries.outputs.release_needed == 'true'
         uses: peter-evans/repository-dispatch@v1.1.3
         with:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
@@ -108,8 +114,14 @@ jobs:
         uses: arduino/setup-task@v1
         with:
           version: ${{ steps.vars.outputs.task_version }}
+      - name: 'Task Queries'
+        id: task_queries
+        run: |
+          set -e
+          echo "::set-output name=release_needed::$(task docker:release_needed)"
       - name: 'Scan for Vulnerabilities'
         id: scan
+        if: steps.task_queries.outputs.release_needed == 'true'
         run: |
           set -e
           task security -- sarif
@@ -118,13 +130,14 @@ jobs:
           GRYPE_DB_CACHE_DIR: ${{ runner.temp }}/.cache/grype
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: 'Upload SARIF reports'
-        if: always()
+        if: always() && steps.task_queries.outputs.release_needed == 'true'
         continue-on-error: true
         uses: github/codeql-action/upload-sarif@v1.0.31
         with:
           sarif_file: ./sarif-reports
       - name: 'Dedicated Grype scan for SARIF report creation'
         id: scan_grype
+        if: steps.task_queries.outputs.release_needed == 'true'
         uses: anchore/scan-action@v3.2.0
         with:
           path: "./"
@@ -133,14 +146,14 @@ jobs:
         env:
           GRYPE_DB_CACHE_DIR: ${{ runner.temp }}/.cache/grype
       - name: 'Upload SARIF Grype reports'
-        if: always()
+        if: always() && steps.task_queries.outputs.release_needed == 'true'
         continue-on-error: true
         uses: github/codeql-action/upload-sarif@v1.0.31
         with:
           sarif_file: ${{ steps.scan_grype.outputs.sarif }}
       - name: 'Set badge properties'
         id: badge
-        if: always()
+        if: always() && steps.task_queries.outputs.release_needed == 'true'
         # icon is svg converted to base64 (https://base64.guru/converter/encode/image/svg)
         run: |
           if [[ "${{ steps.scan.outcome }}" == "success" ]]; then
@@ -156,7 +169,7 @@ jobs:
           echo "::set-output name=label_color::555"
           echo "::set-output name=path::vulnerability.svg"
       - name: 'Update badge'
-        if: always()
+        if: always() && steps.task_queries.outputs.release_needed == 'true'
         uses: peter-evans/repository-dispatch@v1.1.3
         with:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
