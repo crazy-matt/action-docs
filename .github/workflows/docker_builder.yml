@@ -33,7 +33,7 @@ jobs:
       github.event_name == 'push'
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: 'true'
       - name: 'Set Job Vars'
@@ -94,7 +94,7 @@ jobs:
       github.event_name == 'push'
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: 'Cache Grype Database'
         uses: actions/cache@v2
         with:
@@ -195,7 +195,7 @@ jobs:
       github.event_name == 'workflow_dispatch'
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: 'Set Job Vars'
         id: vars
         run: |
