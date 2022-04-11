@@ -79,7 +79,7 @@ jobs:
           echo "::set-output name=path::tests.svg"
       - name: 'Update badge'
         if: always() && steps.task_queries.outputs.release_needed == 'true'
-        uses: peter-evans/repository-dispatch@v1.1.3
+        uses: peter-evans/repository-dispatch@v2.0.0
         with:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
           event-type: badge-update
@@ -170,7 +170,7 @@ jobs:
           echo "::set-output name=path::vulnerability.svg"
       - name: 'Update badge'
         if: always() && steps.task_queries.outputs.release_needed == 'true'
-        uses: peter-evans/repository-dispatch@v1.1.3
+        uses: peter-evans/repository-dispatch@v2.0.0
         with:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
           event-type: badge-update
@@ -178,7 +178,7 @@ jobs:
       - name: "Notify"
         if: failure()
         continue-on-error: true
-        uses: peter-evans/repository-dispatch@v1.1.3
+        uses: peter-evans/repository-dispatch@v2.0.0
         with:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
           event-type: slack-notification
@@ -250,7 +250,7 @@ jobs:
           echo "::set-output name=path::build.svg"
       - name: 'Update badge'
         if: always() && steps.docker_push.outputs.release_needed == 'true'
-        uses: peter-evans/repository-dispatch@v1.1.3
+        uses: peter-evans/repository-dispatch@v2.0.0
         with:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
           event-type: badge-update
@@ -263,7 +263,7 @@ jobs:
           echo "::set-output name=workflow_run_url::https://github.com/${GITHUB_REPOSITORY}/actions/runs/${{ github.run_id }}"
       - name: 'Notify about the build failures'
         if: always() && steps.docker_push.outcome == 'failure' && steps.docker_push.outputs.release_needed == 'true'
-        uses: peter-evans/repository-dispatch@v1.1.3
+        uses: peter-evans/repository-dispatch@v2.0.0
         with:
           token: ${{ secrets.CI_GH_PAT_REPO_DISPATCH_API_AUTH }}
           event-type: slack-notification
