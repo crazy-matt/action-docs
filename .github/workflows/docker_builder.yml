@@ -138,7 +138,7 @@ jobs:
       - name: 'Dedicated Grype scan for SARIF report creation'
         id: scan_grype
         if: steps.task_queries.outputs.release_needed == 'true'
-        uses: anchore/scan-action@v3.2.0
+        uses: anchore/scan-action@v3.3.3
         with:
           path: "./"
           fail-build: true
