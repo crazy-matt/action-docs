@@ -16,7 +16,7 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v2
       - name: 'Update badges'
-        uses: emibcn/badge-action@v1.2.1
+        uses: emibcn/badge-action@v2.0.3
         with:
           icon: ${{ github.event.client_payload.icon }}
           icon-width: ${{ github.event.client_payload.icon_width }}
