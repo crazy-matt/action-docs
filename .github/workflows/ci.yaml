@@ -21,7 +21,7 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
       - name: Install dependencies
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,9 +48,9 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
       - name: Scan
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@83373cf2f8c4db6e24b41c1a9b086bb9619e9cd3 # ratchet:gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: ${{ github.workspace }}/.security/gitleaks.toml
@@ -68,10 +68,10 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
       - name: Scan workspace for vulnerabilities
         id: trivy_scan_1
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # ratchet:aquasecurity/trivy-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -87,7 +87,7 @@ jobs:
         run: sleep 5 && echo "RETRY_REQUIRED=true" >> $GITHUB_ENV
       - name: Retry Vulnerability Scan
         if: env.RETRY_REQUIRED == 'true'
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # ratchet:aquasecurity/trivy-action@master
         with:
           scan-type: fs
           scan-ref: .
@@ -105,10 +105,10 @@ jobs:
       # As semgrep is diff-aware on pull_request events, we don't want to cancel these runs
       cancel-in-progress: ${{ contains(github.event_name, 'push')}}
     container:
-      image: semgrep/semgrep
+      image: index.docker.io/semgrep/semgrep@sha256:7acf76eaa621465588fdfcc84f46fd7ea1e8337ebb1aa1ed6f4685f6eedaec25 # ratchet:semgrep/semgrep
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
       - run: semgrep scan --error --config auto --severity ERROR
 
   update_vulnerabilities_badge:
@@ -118,7 +118,7 @@ jobs:
     if: always()
     steps:
       - name: Update tests badge
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # ratchet:actions/github-script@v7
         with:
           script: |
             const secretsScanOutcome = "${{ needs.secrets_scan.result }}";

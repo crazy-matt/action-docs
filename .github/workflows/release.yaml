@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           submodules: true
       - name: Check if release needed
@@ -51,7 +51,7 @@ jobs:
         run: task docker:push
       - name: Update release badge
         if: always()
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # ratchet:actions/github-script@v7
         with:
           script: |
             const outcome = "${{ steps.release.outcome }}";

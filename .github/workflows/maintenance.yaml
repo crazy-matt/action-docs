@@ -18,8 +18,8 @@ jobs:
     if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
-      - uses: wagoid/commitlint-github-action@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+      - uses: wagoid/commitlint-github-action@0184f5a228ee06430bb9e67d65f73a1a6767496a # ratchet:wagoid/commitlint-github-action@v6
 
   pin_actions_and_docker_images:
     name: Pin Actions and Docker images
@@ -28,12 +28,12 @@ jobs:
       contents: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           token: ${{ secrets.BOT_TOKEN }}
       - name: Check for workflow file changes
         id: filter
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # ratchet:dorny/paths-filter@v3
         with:
           filters: |
             workflows:
@@ -42,7 +42,7 @@ jobs:
         if: steps.filter.outputs.workflows != 'true'
         run: echo "No changes in .github/workflows/, exiting..." && exit 0
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # ratchet:actions/setup-go@v5
         with:
           go-version: 1.23
       - name: Install Ratchet
@@ -76,7 +76,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
       - name: Install Renovate
         run: |
           npm install -g renovate
@@ -101,7 +101,7 @@ jobs:
     steps:
       - name: Check stale branches
         id: branch_cleaner
-        uses: crazy-matt/manage-stale-branches@1.0.2
+        uses: crazy-matt/manage-stale-branches@b16f7b346c9263c74f276709feaa5819f87f6951 # ratchet:crazy-matt/manage-stale-branches@1.0.2
         with:
           gh_token: ${{ secrets.GITHUB_TOKEN }}
           stale_older_than: 100
