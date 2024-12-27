@@ -58,6 +58,7 @@ jobs:
             git config user.signingkey "${{ secrets.BOT_GPG_KEY_ID }}"
             git config commit.gpgsign true
             git status --porcelain
+            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
             git commit -am "ci: pin actions and Docker images in workflows"
             git push
           else

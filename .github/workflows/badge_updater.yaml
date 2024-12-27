@@ -22,6 +22,8 @@ jobs:
           color: ${{ github.event.client_payload.status_color }}
           path: ${{ github.event.client_payload.path }}
       - name: Push changes to badges if any
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           if [[ -n $(git status --porcelain) ]]; then
             gpg --import <(echo "${{ secrets.BOT_GPG_PRIVATE_KEY_BASE64 }}" | base64 -d)
@@ -32,6 +34,8 @@ jobs:
             git checkout --orphan badges
             # Unstage all the files in working tree
             git rm --cached $(git ls-files)
+            git status --porcelain
+            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
             git commit -am "ci: pin actions and Docker images in workflows"
             git push
           else
