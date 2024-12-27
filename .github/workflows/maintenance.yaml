@@ -12,8 +12,8 @@ on:
 
 jobs:
   lint_commits:
+    # Lint commit messages failing if they're not conventional
     name: Lint commit messages
-    description: Lint commit messages failing if they're not conventional
     runs-on: ubuntu-latest
     if: github.actor != 'dependabot[bot]'
     steps:
