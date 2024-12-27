@@ -55,7 +55,7 @@ jobs:
             gpg --import <(echo "${{ secrets.BOT_GPG_PRIVATE_KEY_BASE64 }}" | base64 -d)
             git config user.name "github-actions-bot"
             git config user.email "github-actions-bot@users.noreply.github.com"
-            git config user.signingkey "${{ secrets.BOT_GPG_KEY_ID }}"
+            git config user.signingkey 407FD2A285D5FDFC
             git config commit.gpgsign true
             git status --porcelain
             git commit -am "ci: pin actions and Docker images in workflows"
@@ -89,7 +89,7 @@ jobs:
         env:
           RENOVATE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RENOVATE_CONFIG_FILE: ${{ github.workspace }}/.security/renovate.yaml
-        run: renovate
+        run: renovate --repository=${{ github.repository }} --log-level=debug
 
   cleanup_branches:
     name: Branch Cleaner
