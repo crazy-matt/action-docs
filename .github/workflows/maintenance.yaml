@@ -46,7 +46,7 @@ jobs:
       - name: Install Ratchet
         run: go install github.com/sethvargo/ratchet@latest
       - name: Pin
-        run: ratchet pin ${{ github.workspace }}/.github/workflows/*.{yaml,yml}
+        run: ratchet pin $(ls .github/workflows/*.{yaml,yml} 2>/dev/null)
       - name: Push changes if any
         run: |
           if [[ -n $(git status --porcelain) ]]; then
@@ -85,7 +85,8 @@ jobs:
       - name: Run Renovate
         env:
           RENOVATE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: renovate --config-file=${{ github.workspace }}/.security/renovate.yaml
+          RENOVATE_CONFIG_FILE: ${{ github.workspace }}/.security/renovate.yaml
+        run: renovate
 
   cleanup_branches:
     name: Branch Cleaner

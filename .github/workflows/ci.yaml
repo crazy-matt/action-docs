@@ -54,7 +54,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: ${{ github.workspace }}/.security/gitleaks.toml
-          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false  # sarif upload, would need 'security-events: write'
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false # sarif upload, would need 'security-events: write'
           GITLEAKS_ENABLE_SUMMARY: true
           GITLEAKS_VERSION: 8.22.0
 
