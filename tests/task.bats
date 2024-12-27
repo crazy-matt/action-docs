@@ -13,44 +13,44 @@ function setup() {
 # function teardown() {
 # }
 
-@test "task semver1_greater_than_semver2" {
-  SEMVER1="1.0.1" SEMVER2="1.0.0" run task semver1_greater_than_semver2
+@test "task docker:semver1_greater_than_semver2" {
+  SEMVER1="1.0.1" SEMVER2="1.0.0" run task docker:semver1_greater_than_semver2
   assert_success
   assert_output "true"
   
-  SEMVER1="1.0.0" SEMVER2="1.0.0" run task semver1_greater_than_semver2
+  SEMVER1="1.0.0" SEMVER2="1.0.0" run task docker:semver1_greater_than_semver2
   assert_success
   assert_output "false"
 
-  SEMVER1="1.0.0" SEMVER2="1.0.1" run task semver1_greater_than_semver2
+  SEMVER1="1.0.0" SEMVER2="1.0.1" run task docker:semver1_greater_than_semver2
   assert_success
   assert_output "false"
 
-  SEMVER1="1.0.1" SEMVER2="1.0.0" FORCE="true" run task semver1_greater_than_semver2
+  SEMVER1="1.0.1" SEMVER2="1.0.0" FORCE="true" run task docker:semver1_greater_than_semver2
   assert_success
   assert_output "true"
 
-  SEMVER1="1.0.0" SEMVER2="1.0.0" FORCE="true" run task semver1_greater_than_semver2
+  SEMVER1="1.0.0" SEMVER2="1.0.0" FORCE="true" run task docker:semver1_greater_than_semver2
   assert_success
   assert_output "true"
 
-  SEMVER1="1.0.0" SEMVER2="1.0.1" FORCE="true" run task semver1_greater_than_semver2
+  SEMVER1="1.0.0" SEMVER2="1.0.1" FORCE="true" run task docker:semver1_greater_than_semver2
   assert_success
   assert_output "true"
 
-  SEMVER1="1.0.1" SEMVER2="1.0.0" FORCE="false" run task semver1_greater_than_semver2
+  SEMVER1="1.0.1" SEMVER2="1.0.0" FORCE="false" run task docker:semver1_greater_than_semver2
   assert_success
   assert_output "true"
 
-  SEMVER1="1.0.0" SEMVER2="1.0.0" FORCE="false" run task semver1_greater_than_semver2
+  SEMVER1="1.0.0" SEMVER2="1.0.0" FORCE="false" run task docker:semver1_greater_than_semver2
   assert_success
   assert_output "false"
 
-  SEMVER1="1.0.0" SEMVER2="1.0.1" FORCE="false" run task semver1_greater_than_semver2
+  SEMVER1="1.0.0" SEMVER2="1.0.1" FORCE="false" run task docker:semver1_greater_than_semver2
   assert_success
   assert_output "false"
 
-  SEMVER1="1.0.0" SEMVER2= FORCE= run task semver1_greater_than_semver2
+  SEMVER1="1.0.0" SEMVER2= FORCE= run task docker:semver1_greater_than_semver2
   assert_success
   assert_output "true"
 }

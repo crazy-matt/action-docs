@@ -1,0 +1,166 @@
+---
+version: '3'
+silent: true
+
+
+vars:
+  BUILD_DATE:
+    sh: date -u +'%Y-%m-%dT%H:%M:%SZ'
+  BUILD_DATE_TAG:
+    sh: date -u +'%Y%m%dT%H%M%SZ'
+  DOCKERIZED_BINARY_REPO: npalm/action-docs
+  APP_VERSION:
+    sh: |
+      curl -s "https://api.github.com/repos/{{.DOCKERIZED_BINARY_REPO}}/releases/latest" \
+        | grep "tag_name" \
+        | cut -d '"' -f4
+  GHCR_USERNAME: crazy-matt  # scan:ignore
+  GIT_REPO_FULLNAME:
+    sh: git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##' -e 's#//github.com/*##'
+  #curl -s "https://api.github.com/repos/{{.GIT_REPO_FULLNAME}}/releases/latest" \
+  IMAGE_LATEST_TAG:
+    sh: |
+      echo "${GITHUB_TOKEN}" | docker login ghcr.io -u {{.GHCR_USERNAME}} --password-stdin >/dev/null 2>&1
+      docker manifest inspect ghcr.io/{{.GIT_REPO_FULLNAME}}:latest | jq -r '.tag'
+      docker manifest inspect ghcr.io/{{.GIT_REPO_FULLNAME}}:latest | jq -r '.config.Labels.version'
+  # TODO   ^^ on of these 2 lines above needs to be removed
+  GIT_REPO_HTTP_URL:
+    sh: |
+      echo "https://github.com/$(git config --get remote.origin.url \
+        | sed -e 's#^.*:##' -e 's#.git$##' \
+        | sed -e 's#//github.com/*##')"
+  GIT_SHORT_SHA:
+    sh: git rev-parse --short HEAD
+  DOCKER_IMAGE_NAME: ghcr.io/{{.GIT_REPO_FULLNAME}}
+  DOCKER_IMAGE_LATEST_VERSION: '{{.DOCKER_IMAGE_NAME}}:{{.APP_VERSION}}'
+  ROOT_ABS_PATH:
+    sh: git rev-parse --show-toplevel
+  ROOT_REL_PATH:
+    sh: 'realpath --relative-to="$(pwd)" "{{.ROOT_ABS_PATH}}"'
+
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  resolve_vars:
+    desc: Output Taskfile variables
+    cmds:
+      - echo "📒 {{.TASK}}"
+      - echo "BUILD_DATE":"                  {{.BUILD_DATE}}"
+      - echo "BUILD_DATE_TAG":"              {{.BUILD_DATE_TAG}}"
+      - echo "APP_VERSION":"                 {{.APP_VERSION}}"
+      - echo "DOCKERIZED_BINARY_REPO":"      {{.DOCKERIZED_BINARY_REPO}}"
+      - echo "DOCKER_IMAGE_LATEST_VERSION":" {{.DOCKER_IMAGE_LATEST_VERSION}}"
+      - echo "GIT_REPO_FULLNAME":"           {{.GIT_REPO_FULLNAME}}"
+      - echo "GIT_REPO_HTTP_URL":"           {{.GIT_REPO_HTTP_URL}}"
+      - echo "IMAGE_LATEST_TAG":"            {{.IMAGE_LATEST_TAG}}"
+      - echo "GIT_SHORT_SHA":"               {{.GIT_SHORT_SHA}}"
+      - echo "ROOT_ABS_PATH":"               {{.ROOT_ABS_PATH}}"
+      - echo "ROOT_REL_PATH":"               {{.ROOT_REL_PATH}}"
+
+  build:
+    desc: Build Docker image
+    cmds:
+      - echo "📒 {{.TASK}}"
+      - |
+        docker buildx build --pull \
+          --platform linux/amd64,linux/arm64 \
+          --file "Dockerfile" \
+          --tag "{{.DOCKER_IMAGE_LATEST_VERSION}}" \
+          --build-arg AUTHOR="{{.GHCR_USERNAME}}" \
+          --build-arg BUILD_DATE="{{.BUILD_DATE}}" \
+          --build-arg DOCKER_IMAGE_LATEST_VERSION="{{.DOCKER_IMAGE_LATEST_VERSION}}" \
+          --build-arg DOCKER_TAG="{{.APP_VERSION}}" \
+          --build-arg GIT_REPO_HTTP_URL="{{.GIT_REPO_HTTP_URL}}" \
+          --build-arg GIT_SHORT_SHA="{{.GIT_SHORT_SHA}}" \
+          .
+        echo -e "📦 Image built\n"
+
+  test:
+    desc: Run tests
+    deps: [build]
+    cmds:
+      - echo "📒 {{.TASK}}"
+      - |
+        {{.ROOT_REL_PATH}}/tests/libs/bats-core/bin/bats {{.ROOT_REL_PATH}}/tests/task.bats
+        echo -e "✅ Taskfile tasks validated\n"
+        export BUILD_VERSION="{{.APP_VERSION}}" IMAGE="{{.DOCKER_IMAGE_LATEST_VERSION}}"
+        {{.ROOT_REL_PATH}}/tests/libs/bats-core/bin/bats {{.ROOT_REL_PATH}}/tests/docker.bats
+        echo -e "📦 Image validated\n"
+
+  push:
+    desc: Push image to registry
+    deps: [build, test, security]
+    cmds:
+      - echo "📒 {{.TASK}}"
+      - echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
+      - docker tag {{.DOCKER_IMAGE_LATEST_VERSION}} {{.DOCKER_IMAGE_NAME}}:{{.BUILD_DATE_TAG}}
+      - docker tag {{.DOCKER_IMAGE_LATEST_VERSION}} {{.DOCKER_IMAGE_NAME}}:latest
+      - docker push {{.DOCKER_IMAGE_LATEST_VERSION}}
+      - docker push {{.DOCKER_IMAGE_NAME}}:{{.BUILD_DATE_TAG}}
+      - docker push {{.DOCKER_IMAGE_NAME}}:latest
+    preconditions:
+      - sh: '[ -n "${GITHUB_TOKEN}" ]'
+        msg: 'GITHUB_TOKEN with write package permission required'
+    status:
+      - if [[ "$(task docker:release_needed)" == 'true' ]]; then exit 1; else exit 0; fi
+
+  get_build_version:
+    desc: Output the build version
+    cmds:
+      - echo "{{.APP_VERSION}}"
+
+  semver1_greater_than_semver2:
+    desc: Test if SEMVER1 is greater than SEMVER2
+    cmds:
+      - |
+        if [[ "{{.SEMVER1}}" != "{{.SEMVER2}}" && \
+          "$(printf "{{.SEMVER1}}\n{{.SEMVER2}}\n" | sort -V | head -n 1)" == "{{.SEMVER2}}" ]] \
+          || [[ "{{.FORCE}}" == "true" ]]; then
+          echo "true"
+        else
+          echo "false"
+        fi
+
+  release_needed:
+    desc: Return true if a new version of the binary has been released and requires a new docker image
+    cmd: |
+      SEMVER1="{{.APP_VERSION}}" \
+        SEMVER2="{{.IMAGE_LATEST_TAG}}" \
+        FORCE="${FORCE_RELEASE}" \
+        task docker:semver1_greater_than_semver2
+
+  lint:
+    desc: Lint Dockerfiles
+    cmds:
+      - echo "📒 {{.TASK}}"
+      - hadolint --config .linters/hadolint.yaml --format tty Dockerfile
+
+  security:
+    desc: Run all security scanners
+    cmds:
+      - defer: \rm -f .task_errors
+      - cmd: task security:snyk || touch .task_errors
+      - cmd: task security:trivy || touch .task_errors
+      - cmd: if [ -f .task_errors ]; then exit 1; fi
+
+  security:snyk:
+    desc: Scan for Docker image vulnerabilities with Snyk
+    deps: [build]
+    cmds:
+      - echo "📒 {{.TASK}}"
+      - snyk auth "${SNYK_TOKEN}"; snyk container test {{.DOCKER_IMAGE_LATEST_VERSION}} --file=Dockerfile
+      # ignore_error: true  # needed when I reached the free tier limit
+
+  security:trivy:
+    desc: Scan for Docker image vulnerabilities with Trivy (https://github.com/aquasecurity/trivy-action?tab=readme-ov-file#trivy-config-file)
+    deps: [build]
+    cmds:
+      - echo "📒  {{.TASK}}"
+      - |
+        trivy image --config .security/trivy.yaml \
+          --ignorefile .security/trivyignore \
+          --format table \
+          {{.DOCKER_IMAGE_LATEST_VERSION}}

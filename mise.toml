@@ -1,0 +1,11 @@
+[tools]
+actionlint = "latest"
+gitleaks = "latest"
+hadolint = "latest"
+markdownlint-cli2 = "latest"
+shellcheck = "latest"
+snyk = "latest"
+sops = "3.9.0"
+task = "3.34.0"
+trivy = "latest"
+yamllint = "latest"

@@ -1,0 +1,48 @@
+name: Badge Updater
+
+on:
+  repository_dispatch:
+    types: [badge-update]
+
+jobs:
+  badge_file_creator:
+    name: Badge File Creator
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Update badges
+        uses: emibcn/badge-action@v2
+        with:
+          icon: ${{ github.event.client_payload.icon }}
+          icon-width: ${{ github.event.client_payload.icon_width }}
+          label: ${{ github.event.client_payload.label }}
+          label-color: ${{ github.event.client_payload.label_color }}
+          status: ${{ github.event.client_payload.status }}
+          color: ${{ github.event.client_payload.status_color }}
+          path: ${{ github.event.client_payload.path }}
+      - name: Push changes to badges if any
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            gpg --import <(echo "${{ secrets.BOT_GPG_PRIVATE_KEY_BASE64 }}" | base64 -d)
+            git config user.name "github-actions-bot"
+            git config user.email "github-actions-bot@users.noreply.github.com"
+            git config user.signingkey "${{ secrets.BOT_GPG_KEY_ID }}"
+            git config commit.gpgsign true
+            git checkout --orphan badges
+            # Unstage all the files in working tree
+            git rm --cached $(git ls-files)
+            git commit -am "ci: pin actions and Docker images in workflows"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+      - name: "Commit-back changes"
+        uses: swinton/commit@v2.0.0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            ${{ github.event.client_payload.path }}
+          commit-message: "update ${{ github.event.client_payload.path }}"
+          ref: refs/heads/badges
