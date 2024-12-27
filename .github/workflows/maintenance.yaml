@@ -48,6 +48,8 @@ jobs:
       - name: Pin
         run: ratchet pin $(ls .github/workflows/*.{yaml,yml} 2>/dev/null)
       - name: Push changes if any
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           if [[ -n $(git status --porcelain) ]]; then
             gpg --import <(echo "${{ secrets.BOT_GPG_PRIVATE_KEY_BASE64 }}" | base64 -d)
@@ -55,6 +57,7 @@ jobs:
             git config user.email "github-actions-bot@users.noreply.github.com"
             git config user.signingkey "${{ secrets.BOT_GPG_KEY_ID }}"
             git config commit.gpgsign true
+            git status --porcelain
             git commit -am "ci: pin actions and Docker images in workflows"
             git push
           else
