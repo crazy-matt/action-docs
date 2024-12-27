@@ -37,12 +37,3 @@ jobs:
           else
             echo "No changes to commit."
           fi
-      - name: "Commit-back changes"
-        uses: swinton/commit@v2.0.0
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          files: |
-            ${{ github.event.client_payload.path }}
-          commit-message: "update ${{ github.event.client_payload.path }}"
-          ref: refs/heads/badges
