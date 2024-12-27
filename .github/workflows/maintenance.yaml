@@ -89,7 +89,7 @@ jobs:
         env:
           RENOVATE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RENOVATE_CONFIG_FILE: ${{ github.workspace }}/.security/renovate.yaml
-        run: renovate --repository=${{ github.repository }} --log-level=debug
+        run: renovate
 
   cleanup_branches:
     name: Branch Cleaner
