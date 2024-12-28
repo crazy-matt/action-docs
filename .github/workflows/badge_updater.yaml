@@ -13,6 +13,14 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           token: ${{ secrets.BOT_TOKEN }}
+      - name: Prepare badges branch
+        run: |
+          if git show-ref --quiet refs/heads/badges; then
+            git checkout badges
+          else
+            git checkout --orphan badges
+            git rm --cached -r .
+          fi
       - name: Update badges
         uses: emibcn/badge-action@808173dd03e2f30c980d03ee49e181626088eee8 # ratchet:emibcn/badge-action@v2
         with:
@@ -31,12 +39,10 @@ jobs:
             git config user.email "github-actions-bot@users.noreply.github.com"
             git config user.signingkey 407FD2A285D5FDFC
             git config commit.gpgsign true
-            git checkout --orphan badges
-            # Unstage all the files in working tree
-            git rm --cached $(git ls-files)
             git status --porcelain
-            git commit -am "ci: pin actions and Docker images in workflows"
-            git push
+            git add .
+            git commit -m "ci: pin actions and Docker images in workflows"
+            git push origin badges --force
           else
             echo "No changes to commit."
           fi
