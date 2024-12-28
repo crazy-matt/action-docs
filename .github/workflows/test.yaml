@@ -24,16 +24,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           submodules: true
-      - name: Install dependencies
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          latest_asset=$(gh release view --repo jdx/mise --json assets -q '.assets[] | select(.name | endswith("linux-x64")) | .url')
-          curl -L -o mise "$latest_asset"
-          chmod +x mise
-          sudo mv mise /usr/local/bin
-          mise install
-          echo 'eval "$(mise activate bash --shims)"' >> $GITHUB_ENV
+      - uses: jdx/mise-action@v2
       - name: Run tests
         id: test
         run: |
