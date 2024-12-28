@@ -8,7 +8,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
   security-events: write
 
 jobs:
@@ -121,27 +121,33 @@ jobs:
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # ratchet:actions/github-script@v7
         with:
           script: |
-            const secretsScanOutcome = "${{ needs.secrets_scan.result }}";
-            const trivyOutcome = "${{ needs.static_analysis_trivy.result }}";
-            const semgrepOutcome = "${{ needs.static_analysis_semgrep.result }}";
+            try {
+              const secretsScanOutcome = "${{ needs.secrets_scan.result }}";
+              const trivyOutcome = "${{ needs.static_analysis_trivy.result }}";
+              const semgrepOutcome = "${{ needs.static_analysis_semgrep.result }}";
 
-            const hasFailed = [secretsScanOutcome, trivyOutcome, semgrepOutcome].includes("failure");
-            const status = hasFailed ? "failing" : "passing";
-            const statusColor = hasFailed ? "red" : "green";
+              const hasFailed = [secretsScanOutcome, trivyOutcome, semgrepOutcome].includes("failure");
+              const status = hasFailed ? "failing" : "passing";
+              const statusColor = hasFailed ? "red" : "green";
 
-            const payload = {
-              icon: "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjIiIGJhc2VQcm9maWxlPSJ0aW55LXBzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMSAzNiIgd2lkdGg9IjMxIiBoZWlnaHQ9IjM2Ij4KCTx0aXRsZT5zaGllbGRfMTA2NjYwLXN2ZzwvdGl0bGU+Cgk8c3R5bGU+CgkJdHNwYW4geyB3aGl0ZS1zcGFjZTpwcmUgfQoJCS5zMCB7IGZpbGw6ICNmZmI0MDA7c3Ryb2tlOiAjZmZmZmZmO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS13aWR0aDogMCB9IAoJCS5zMSB7IGZpbGw6ICMwNzBjMmI7c3Ryb2tlOiAjZmZmZmZmO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS13aWR0aDogMCB9IAoJPC9zdHlsZT4KCTxwYXRoIGlkPSJMYXllciIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGFzcz0iczAiIGQ9Im0xNS41MiAzNWMtMTUuOTMtNi4xNy0xNC40OC0yNy4yLTE0LjQ4LTI3LjJjOS42NCAxLjc4IDE0LjQ4LTYuOCAxNC40OC02LjhjMCAwIDQuODMgOC41OCAxNC40NSA2LjhjMCAwIDEuNDQgMjEuMDMtMTQuNDUgMjcuMnoiIC8+Cgk8cGF0aCBpZD0iTGF5ZXIiIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xhc3M9InMxIiBkPSJtMTAgMTdsMyAzbDgtOGwyIDJsLTEwIDEwbC01LTVsMi0yeiIgLz4KPC9zdmc+",
-              icon_width: "20",
-              label: "Vulnerabilities",
-              label_color: "555",
-              status,
-              status_color: statusColor,
-              path: "vulnerabilities.svg"
-            };
+              const payload = {
+                icon: "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjIiIGJhc2VQcm9maWxlPSJ0aW55LXBzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMSAzNiIgd2lkdGg9IjMxIiBoZWlnaHQ9IjM2Ij4KCTx0aXRsZT5zaGllbGRfMTA2NjYwLXN2ZzwvdGl0bGU+Cgk8c3R5bGU+CgkJdHNwYW4geyB3aGl0ZS1zcGFjZTpwcmUgfQoJCS5zMCB7IGZpbGw6ICNmZmI0MDA7c3Ryb2tlOiAjZmZmZmZmO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS13aWR0aDogMCB9IAoJCS5zMSB7IGZpbGw6ICMwNzBjMmI7c3Ryb2tlOiAjZmZmZmZmO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS13aWR0aDogMCB9IAoJPC9zdHlsZT4KCTxwYXRoIGlkPSJMYXllciIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGFzcz0iczAiIGQ9Im0xNS41MiAzNWMtMTUuOTMtNi4xNy0xNC40OC0yNy4yLTE0LjQ4LTI3LjJjOS42NCAxLjc4IDE0LjQ4LTYuOCAxNC40OC02LjhjMCAwIDQuODMgOC41OCAxNC40NSA2LjhjMCAwIDEuNDQgMjEuMDMtMTQuNDUgMjcuMnoiIC8+Cgk8cGF0aCBpZD0iTGF5ZXIiIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xhc3M9InMxIiBkPSJtMTAgMTdsMyAzbDgtOGwyIDJsLTEwIDEwbC01LTVsMi0yeiIgLz4KPC9zdmc+",
+                icon_width: "20",
+                label: "Vulnerabilities",
+                label_color: "555",
+                status,
+                status_color: statusColor,
+                path: "vulnerabilities.svg"
+              };
 
-            await github.repos.createDispatchEvent({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              event_type: "badge-update",
-              client_payload: payload
-            });
+              const result = await github.rest.repos.createDispatchEvent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                event_type: "badge-update",
+                client_payload: payload
+              });
+              console.log(result);
+            } catch(error) {
+              console.error(error);
+              core.setFailed(error);
+            }
