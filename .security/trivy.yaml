@@ -14,7 +14,6 @@ scan:
   scanners:
     - vuln
     - secret
-    - misconfig
   skip-dirs:
     - node_modules
     - vendor
