@@ -16,9 +16,6 @@ jobs:
     name: Lint all code
     runs-on: ubuntu-latest
     if: github.actor != 'dependabot[bot]'
-    concurrency:
-      group: ${{ github.workflow }}-${GITHUB_JOB}-${{ github.ref }}
-      cancel-in-progress: true
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
@@ -43,9 +40,6 @@ jobs:
     name: Secrets Scan
     runs-on: ubuntu-latest
     if: github.actor != 'dependabot[bot]'
-    concurrency:
-      group: ${{ github.workflow }}-${GITHUB_JOB}-${{ github.ref }}
-      cancel-in-progress: true
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
@@ -63,9 +57,6 @@ jobs:
     name: Static Analysis with Trivy
     runs-on: ubuntu-latest
     if: github.actor != 'dependabot[bot]'
-    concurrency:
-      group: ${{ github.workflow }}-${GITHUB_JOB}-${{ github.ref }}
-      cancel-in-progress: true
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
@@ -100,10 +91,6 @@ jobs:
     name: Static Analysis with Semgrep
     runs-on: ubuntu-latest
     if: github.actor != 'dependabot[bot]'
-    concurrency:
-      group: ${{ github.workflow }}-${GITHUB_JOB}-${{ github.ref }}
-      # As semgrep is diff-aware on pull_request events, we don't want to cancel these runs
-      cancel-in-progress: ${{ contains(github.event_name, 'push')}}
     container:
       image: index.docker.io/semgrep/semgrep@sha256:7acf76eaa621465588fdfcc84f46fd7ea1e8337ebb1aa1ed6f4685f6eedaec25 # ratchet:semgrep/semgrep
     steps:
