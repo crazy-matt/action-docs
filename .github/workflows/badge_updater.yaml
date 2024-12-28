@@ -20,6 +20,7 @@ jobs:
           else
             git checkout --orphan badges
             git rm --cached -r .
+            git commit -m "chore: initialize badges branch"
           fi
       - name: Update badges
         uses: emibcn/badge-action@808173dd03e2f30c980d03ee49e181626088eee8 # ratchet:emibcn/badge-action@v2
