@@ -7,8 +7,8 @@ timeout: 5m0s
 
 pkg:
   types:
-   - os
-   - library
+    - os
+    - library
 
 scan:
   scanners:

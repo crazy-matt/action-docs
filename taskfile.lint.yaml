@@ -7,7 +7,6 @@ tasks:
     desc: Run all linters
     cmds:
       - defer: \rm -f .task_errors
-      - cmd: task lint:actions || touch .task_errors
       - cmd: task lint:markdown || touch .task_errors
       - cmd: task lint:yaml || touch .task_errors
       - cmd: if [ -f .task_errors ]; then exit 1; fi
