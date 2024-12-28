@@ -21,9 +21,7 @@ vars:
   IMAGE_LATEST_TAG:
     sh: |
       echo "${GITHUB_TOKEN}" | docker login ghcr.io -u {{.GHCR_USERNAME}} --password-stdin >/dev/null 2>&1
-      docker manifest inspect ghcr.io/{{.GIT_REPO_FULLNAME}}:latest | jq -r '.labels.org.opencontainers.image.version'
-  # TODO   ^^ on of these 2 lines above needs to be removed
-  # docker manifest inspect ghcr.io/{{.GIT_REPO_FULLNAME}}:latest | jq -r '.tag'
+      docker manifest inspect ghcr.io/{{.GIT_REPO_FULLNAME}}:latest | jq -r '.labels.org.opencontainers.image.version // ""'
   GIT_REPO_HTTP_URL:
     sh: |
       echo "https://github.com/$(git config --get remote.origin.url \

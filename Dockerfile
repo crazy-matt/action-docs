@@ -1,7 +1,7 @@
 ARG NODE_VERSION=lts
 FROM node:${NODE_VERSION}-alpine AS builder
 
-RUN npm install -g action-docs@${DOCKER_TAG} && \
+RUN npm install -g "action-docs@${DOCKER_TAG}" && \
     npm cache clean --force
 
 
