@@ -64,34 +64,27 @@ jobs:
             echo "No changes to commit."
           fi
 
-  update_dependencies:
-    name: Update dependencies with Renovate PRs
+  dependabot_automerger:
+    name: Dependabot Automerger
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]'
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     permissions:
       contents: write
       pull-requests: write
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
-      - name: Install Renovate
-        run: |
-          npm install -g renovate
-          gpg --import <(echo "${{ secrets.BOT_GPG_PRIVATE_KEY_BASE64 }}" | base64 -d)
-          git config user.name "github-actions-bot"
-          git config user.email "github-actions-bot@users.noreply.github.com"
-          git config user.signingkey "${{ secrets.BOT_GPG_KEY_ID }}"
-          git config commit.gpgsign true
-      - name: Run Renovate
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Enable auto-merge
+        if: contains('automerged-security,automerged-versions', steps.dependabot-metadata.outputs.dependency-group)
+        run: gh pr merge --auto --merge "$PR_URL"
         env:
-          RENOVATE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RENOVATE_CONFIG_FILE: ${{ github.workspace }}/.security/renovate.yaml
-        run: renovate
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
-  cleanup_branches:
+  branch_cleaner:
     name: Branch Cleaner
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule'
