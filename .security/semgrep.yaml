@@ -1,0 +1,8 @@
+rules:
+  - id: dockerfile.security.missing-user-entrypoint.missing-user-entrypoint
+    severity: INFO
+    ignore: true
+
+  - id: dockerfile.security.missing-user.missing-user
+    severity: INFO
+    ignore: true

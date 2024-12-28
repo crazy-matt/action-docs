@@ -96,8 +96,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
-      - run: semgrep scan --error --config auto --severity ERROR --ignore .security/semgrepignore
-
+      - run: semgrep scan --error --config=auto --config=.security/semgrep.yaml --severity=ERROR
+ 
   update_vulnerabilities_badge:
     name: Update vulnerabilities badge
     runs-on: ubuntu-latest
