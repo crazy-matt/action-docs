@@ -19,7 +19,7 @@ jobs:
             git checkout badges
           else
             git checkout --orphan badges
-            git rm --cached -r .
+            git rm -r .
           fi
       - name: Update badges
         uses: emibcn/badge-action@808173dd03e2f30c980d03ee49e181626088eee8 # ratchet:emibcn/badge-action@v2
@@ -40,7 +40,7 @@ jobs:
             git config user.signingkey 407FD2A285D5FDFC
             git config commit.gpgsign true
             git status --porcelain
-            git add -all
+            git add --all
             git commit -m "ci: pin actions and Docker images in workflows"
             git push origin badges --force
           else

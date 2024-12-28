@@ -34,4 +34,3 @@ LABEL org.opencontainers.image.title="Dockerized action-docs" \
 WORKDIR /work
 
 ENTRYPOINT ["/usr/local/bin/action-docs"]
-CMD [""]
