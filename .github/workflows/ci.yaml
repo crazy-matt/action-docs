@@ -100,7 +100,7 @@ jobs:
           semgrep scan --error --config=auto --severity=ERROR \
              --exclude-rule dockerfile.security.missing-user-entrypoint.missing-user-entrypoint \
              --exclude-rule dockerfile.security.missing-user.missing-user
- 
+
   update_vulnerabilities_badge:
     name: Update vulnerabilities badge
     runs-on: ubuntu-latest
