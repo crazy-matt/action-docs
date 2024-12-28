@@ -54,8 +54,8 @@ jobs:
           if [[ -n $(git status --porcelain) ]]; then
             gpg --import <(echo "${{ secrets.BOT_GPG_PRIVATE_KEY_BASE64 }}" | base64 -d)
             git config user.name "github-actions-bot"
-            git config user.email "${{ secrets.BOT_EMAIL }}"
-            git config user.signingkey F63004DD18AFCC73
+            git config user.email "46377983+crazy-matt@users.noreply.github.com"
+            git config user.signingkey 2CEE01BC2C9B6A24
             git config commit.gpgsign true
             git status --porcelain
             git commit -am "ci: pin actions and Docker images in workflows"

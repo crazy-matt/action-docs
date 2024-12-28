@@ -92,13 +92,13 @@ jobs:
              --exclude-rule dockerfile.security.missing-user-entrypoint.missing-user-entrypoint \
              --exclude-rule dockerfile.security.missing-user.missing-user
 
-  update_vulnerabilities_badge:
-    name: Update vulnerabilities badge
+  conclusion:
+    name: conclusion
     runs-on: ubuntu-latest
     needs: [secrets_scan, static_analysis_trivy, static_analysis_semgrep]
     if: always()
     steps:
-      - name: Update tests badge
+      - name: Update vulnerabilities badge
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # ratchet:actions/github-script@v7
         with:
           script: |
