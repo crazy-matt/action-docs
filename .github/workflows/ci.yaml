@@ -28,7 +28,8 @@ jobs:
           chmod +x mise
           sudo mv mise /usr/local/bin
           mise install
-          echo 'eval "$(mise activate bash --shims)"' >> $GITHUB_ENV
+          mise_path=$(mise activate bash --shims)
+          echo "PATH=$mise_path:\$PATH" >> $GITHUB_ENV
       - name: Lint docker image
         if: always()
         run: task docker:lint
