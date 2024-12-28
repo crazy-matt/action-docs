@@ -36,7 +36,7 @@ jobs:
         run: |
           sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
           [[ "$(task docker:release_needed)" == 'true' ]] || exit 0
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # ratchet:jdx/mise-action@v2
       - name: Release
         id: release
         run: task docker:push
