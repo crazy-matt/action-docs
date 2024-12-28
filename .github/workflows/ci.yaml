@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor != 'dependabot[bot]'
     concurrency:
-      group: ${{ github.workflow }}-${{ github.job }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${GITHUB_JOB}-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - name: Checkout repo
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor != 'dependabot[bot]'
     concurrency:
-      group: ${{ github.workflow }}-${{ github.job }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${GITHUB_JOB}-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - name: Checkout repo
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor != 'dependabot[bot]'
     concurrency:
-      group: ${{ github.workflow }}-${{ github.job }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${GITHUB_JOB}-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - name: Checkout repo
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor != 'dependabot[bot]'
     concurrency:
-      group: ${{ github.workflow }}-${{ github.job }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${GITHUB_JOB}-${{ github.ref }}
       # As semgrep is diff-aware on pull_request events, we don't want to cancel these runs
       cancel-in-progress: ${{ contains(github.event_name, 'push')}}
     container:

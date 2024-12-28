@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule'
     concurrency:
-      group: ${{ github.workflow }}-${{ github.job }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${GITHUB_JOB}-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - name: Check stale branches
