@@ -1,12 +1,12 @@
-name: Badge Updater
+name: Update Badge ${{ github.event.client_payload.label }}
 
 on:
   repository_dispatch:
     types: [badge-update]
 
 jobs:
-  badge_file_creator:
-    name: Badge File Creator
+  badge_file_updater:
+    name: Badge File Updater
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -21,7 +21,7 @@ jobs:
             git checkout --orphan badges
             git rm -rf .
           fi
-      - name: Update badges
+      - name: Create badge
         uses: emibcn/badge-action@808173dd03e2f30c980d03ee49e181626088eee8 # ratchet:emibcn/badge-action@v2
         with:
           icon: ${{ github.event.client_payload.icon }}
@@ -31,7 +31,7 @@ jobs:
           status: ${{ github.event.client_payload.status }}
           color: ${{ github.event.client_payload.status_color }}
           path: ${{ github.event.client_payload.path }}
-      - name: Push changes to badges if any
+      - name: Push changes
         run: |
           if [[ -n $(git status --porcelain) ]]; then
             gpg --import <(echo "${{ secrets.BOT_GPG_PRIVATE_KEY_BASE64 }}" | base64 -d)
