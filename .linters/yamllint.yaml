@@ -19,7 +19,7 @@ rules:
     quote-type: any
     required: false
   braces:
-    min-spaces-inside: 1
+    min-spaces-inside: 0
     max-spaces-inside: 1
   comments: disable
   comments-indentation: disable
