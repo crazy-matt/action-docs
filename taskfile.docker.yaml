@@ -4,10 +4,10 @@ silent: true
 
 
 vars:
-  DOCKERIZED_BINARY_REPO: npalm/action-docs
+  DOCKERIZED_APP_REPO: npalm/action-docs
   APP_VERSION:
     sh: |
-      curl -s "https://api.github.com/repos/{{.DOCKERIZED_BINARY_REPO}}/releases/latest" \
+      curl -s "https://api.github.com/repos/{{.DOCKERIZED_APP_REPO}}/releases/latest" \
         | grep "tag_name" \
         | cut -d '"' -f4
   GHCR_USERNAME: crazy-matt  # scan:ignore
@@ -38,7 +38,7 @@ tasks:
     cmds:
       - echo "📒 {{.TASK}}"
       - echo "APP_VERSION":"                 {{.APP_VERSION}}"
-      - echo "DOCKERIZED_BINARY_REPO":"      {{.DOCKERIZED_BINARY_REPO}}"
+      - echo "DOCKERIZED_APP_REPO":"         {{.DOCKERIZED_APP_REPO}}"
       - echo "DOCKER_IMAGE_LATEST_VERSION":" {{.DOCKER_IMAGE_LATEST_VERSION}}"
       - echo "GIT_REPO_FULLNAME":"           {{.GIT_REPO_FULLNAME}}"
       - echo "GIT_REPO_HTTP_URL":"           {{.GIT_REPO_HTTP_URL}}"
