@@ -1,4 +1,4 @@
-name: Test ${{ github.short_sha }}
+name: Test
 
 on:
   workflow_dispatch:

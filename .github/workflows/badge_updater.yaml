@@ -1,4 +1,4 @@
-name: Update Badge ${{ github.event.client_payload.label }}
+name: Update Badge
 
 on:
   repository_dispatch:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   badge_file_updater:
-    name: Badge File Updater
+    name: Update Badge ${{ github.event.client_payload.label }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
