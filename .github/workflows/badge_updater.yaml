@@ -20,7 +20,7 @@ jobs:
             git switch badges
           else
             git switch --orphan badges
-            git ls-files --error-unmatch . > /dev/null 2>&1 && git rm -rf .
+            [[ -z "$(git ls-files)" ]] || git rm -rf .
           fi
       - name: Create badge
         uses: emibcn/badge-action@808173dd03e2f30c980d03ee49e181626088eee8 # ratchet:emibcn/badge-action@v2
