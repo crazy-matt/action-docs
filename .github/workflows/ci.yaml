@@ -1,0 +1,140 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  linting:
+    name: Lint all code
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+      - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # ratchet:jdx/mise-action@v2
+      - name: Lint docker image
+        if: always()
+        run: task docker:lint
+      - name: Lint all the rest
+        if: always()
+        run: task lint
+
+  secrets_scan:
+    name: Secrets Scan
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan
+        uses: gitleaks/gitleaks-action@83373cf2f8c4db6e24b41c1a9b086bb9619e9cd3 # ratchet:gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: ${{ github.workspace }}/.security/gitleaks.toml
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false # sarif upload, would need 'security-events: write'
+          GITLEAKS_ENABLE_SUMMARY: true
+          GITLEAKS_VERSION: 8.22.0
+
+  static_analysis_trivy:
+    # Can cover IaC
+    name: Static Analysis with Trivy
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    permissions:
+      contents: write
+      security-events: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+      - name: Scan workspace for vulnerabilities
+        id: trivy_scan_1
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # ratchet:aquasecurity/trivy-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          scan-type: fs
+          scan-ref: .
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
+          format: github
+          output: dependency-results.sbom.json
+          trivy-config: .security/trivy.yaml
+        continue-on-error: true
+      - name: Sleep before retry
+        if: steps.trivy_scan_1.outcome != 'success'
+        run: sleep 5 && echo "RETRY_REQUIRED=true" >> $GITHUB_ENV
+      - name: Retry Vulnerability Scan
+        if: env.RETRY_REQUIRED == 'true'
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # ratchet:aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
+          format: github
+          output: dependency-results.sbom.json
+          trivy-config: .security/trivy.yaml
+
+  static_analysis_semgrep:
+    name: Static Analysis with Semgrep
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    container:
+      image: index.docker.io/semgrep/semgrep@sha256:7acf76eaa621465588fdfcc84f46fd7ea1e8337ebb1aa1ed6f4685f6eedaec25 # ratchet:semgrep/semgrep
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+      - run: |
+          semgrep scan --error --config=auto --severity=ERROR \
+             --exclude-rule dockerfile.security.missing-user-entrypoint.missing-user-entrypoint \
+             --exclude-rule dockerfile.security.missing-user.missing-user
+
+  conclusion:
+    name: conclusion
+    runs-on: ubuntu-latest
+    needs: [secrets_scan, static_analysis_trivy, static_analysis_semgrep]
+    if: always()
+    permissions:
+      contents: write
+    steps:
+      - name: Update vulnerabilities badge
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # ratchet:actions/github-script@v7
+        with:
+          script: |
+            try {
+              const secretsScanOutcome = "${{ needs.secrets_scan.result }}";
+              const trivyOutcome = "${{ needs.static_analysis_trivy.result }}";
+              const semgrepOutcome = "${{ needs.static_analysis_semgrep.result }}";
+
+              const hasFailed = [secretsScanOutcome, trivyOutcome, semgrepOutcome].includes("failure");
+              const status = hasFailed ? "failing" : "passing";
+              const statusColor = hasFailed ? "red" : "green";
+
+              const payload = {
+                icon: "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjIiIGJhc2VQcm9maWxlPSJ0aW55LXBzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMSAzNiIgd2lkdGg9IjMxIiBoZWlnaHQ9IjM2Ij4KCTx0aXRsZT5zaGllbGRfMTA2NjYwLXN2ZzwvdGl0bGU+Cgk8c3R5bGU+CgkJdHNwYW4geyB3aGl0ZS1zcGFjZTpwcmUgfQoJCS5zMCB7IGZpbGw6ICNmZmI0MDA7c3Ryb2tlOiAjZmZmZmZmO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS13aWR0aDogMCB9IAoJCS5zMSB7IGZpbGw6ICMwNzBjMmI7c3Ryb2tlOiAjZmZmZmZmO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS13aWR0aDogMCB9IAoJPC9zdHlsZT4KCTxwYXRoIGlkPSJMYXllciIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGFzcz0iczAiIGQ9Im0xNS41MiAzNWMtMTUuOTMtNi4xNy0xNC40OC0yNy4yLTE0LjQ4LTI3LjJjOS42NCAxLjc4IDE0LjQ4LTYuOCAxNC40OC02LjhjMCAwIDQuODMgOC41OCAxNC40NSA2LjhjMCAwIDEuNDQgMjEuMDMtMTQuNDUgMjcuMnoiIC8+Cgk8cGF0aCBpZD0iTGF5ZXIiIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xhc3M9InMxIiBkPSJtMTAgMTdsMyAzbDgtOGwyIDJsLTEwIDEwbC01LTVsMi0yeiIgLz4KPC9zdmc+",
+                icon_width: "20",
+                label: "Vulnerabilities",
+                label_color: "555",
+                status,
+                status_color: statusColor,
+                path: "vulnerabilities.svg"
+              };
+
+              const result = await github.rest.repos.createDispatchEvent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                event_type: "badge-update",
+                client_payload: payload
+              });
+              console.log(result);
+            } catch(error) {
+              console.error(error);
+              core.setFailed(error);
+            }

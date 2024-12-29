@@ -1,0 +1,18 @@
+# https://taskfile.dev
+# A modern replacement of Makefile
+---
+version: '3'
+silent: true
+
+includes:
+  docker:
+    taskfile: ./taskfile.docker.yaml
+  lint:
+    taskfile: ./taskfile.lint.yaml
+  sec:
+    taskfile: ./taskfile.security.yaml
+
+tasks:
+  default:
+    cmds:
+      - task --list

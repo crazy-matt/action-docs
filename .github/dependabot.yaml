@@ -1,0 +1,59 @@
+---
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: friday
+      time: '12:00'
+    timezone: 'Europe/London'
+    commit-message:
+      prefix: chore
+    labels: [actions]
+    open-pull-requests-limit: 3
+    groups:
+      automerged-security:
+        applies-to: security-updates
+        update-types: [minor, patch]
+      automerged-versions:
+        applies-to: version-updates
+        update-types: [minor, patch]
+
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+      day: friday
+      time: '12:00'
+    timezone: 'Europe/London'
+    commit-message:
+      prefix: chore
+    labels: [golang]
+    open-pull-requests-limit: 3
+    groups:
+      automerged-security:
+        applies-to: security-updates
+        update-types: [minor, patch]
+      automerged-versions:
+        applies-to: version-updates
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: friday
+      time: '12:00'
+    timezone: 'Europe/London'
+    commit-message:
+      prefix: chore
+    labels: [docker]
+    open-pull-requests-limit: 3
+    groups:
+      automerged-security:
+        applies-to: security-updates
+        update-types: [minor, patch]
+      automerged-versions:
+        applies-to: version-updates
+        update-types: [minor, patch]

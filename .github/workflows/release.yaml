@@ -1,0 +1,135 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_release:
+        description: |
+          When the action-docs latest release has already been dockerized but
+          you want to rebuild a Docker image.
+        required: false
+        default: true
+  schedule:
+    - cron: '0 0 * * *' # Run every day at midnight
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build, test, scan and release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      security-events: write # for Trivy reporting
+      packages: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+
+      - name: Check if release needed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORCE_RELEASE: ${{ github.event.inputs.force_release }}
+        run: |
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+          [[ "$(task docker:release_needed)" == 'true' ]] || exit 0
+
+      - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # ratchet:jdx/mise-action@v2
+
+      - name: Set up QEMU # for multi-platform build
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # ratchet:docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # ratchet:docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # ratchet:docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch image metadata
+        run: |
+          echo "IMAGE_LATEST_VERSION=$(task docker:image_latest_version)" >> $GITHUB_ENV
+          echo "DOCKER_TAG=$(task docker:docker_tag)" >> $GITHUB_ENV
+
+      - name: Build single image
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # ratchet:docker/build-push-action@v6
+        with:
+          push: false
+          file: Dockerfile
+          context: .
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+          tags: ${{ env.IMAGE_LATEST_VERSION }}
+          build-args: |
+            AUTHOR=${{ github.actor }}
+            DOCKER_IMAGE_LATEST_VERSION=${{ env.IMAGE_LATEST_VERSION }}
+            DOCKER_TAG=${{ env.DOCKER_TAG }}
+            GIT_REPO_HTTP_URL=${{ github.server_url }}/${{ github.repository }}
+            GIT_SHORT_SHA=${{ github.sha }}
+
+      - name: Test image
+        id: test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          task docker:test
+          task docker:security
+
+      - name: Push Image
+        id: release
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # ratchet:docker/build-push-action@v6
+        with:
+          push: true
+          file: Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: false
+          tags: |
+            ${{ env.IMAGE_LATEST_VERSION }}
+            ghcr.io/${{ github.repository }}:latest
+          build-args: |
+            AUTHOR=${{ github.actor }}
+            DOCKER_IMAGE_LATEST_VERSION=${{ env.IMAGE_LATEST_VERSION }}
+            DOCKER_TAG=${{ env.DOCKER_TAG }}
+            GIT_REPO_HTTP_URL=${{ github.server_url }}/${{ github.repository }}
+            GIT_SHORT_SHA=${{ github.sha }}
+
+      - name: Update release badge
+        if: always()
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # ratchet:actions/github-script@v7
+        with:
+          script: |
+            try {
+              const outcome = "${{ steps.release.outcome }}";
+              const status = outcome === "success" ? "passing" : "failing";
+              const statusColor = outcome === "success" ? "green" : "red";
+
+              const payload = {
+                icon: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDIxLjAuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiCgkgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTAyNCAxMDI0OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+Cgkuc3Qwe2ZpbGw6IzAwOTFFMjt9Cgkuc3Qxe2ZpbGw6I0ZGRkZGRjt9Cjwvc3R5bGU+CjxnIGlkPSJHdWlkZXMiPgo8L2c+CjxnIGlkPSJJY29uIj4KCTxjaXJjbGUgY2xhc3M9InN0MCIgY3g9IjUxMiIgY3k9IjUxMiIgcj0iNTEyIi8+Cgk8cGF0aCBjbGFzcz0ic3QxIiBkPSJNODI3LjMsNDYxLjVjLTEuNi0xLjMtMTYuMS0xMi4yLTQ2LjctMTIuMmMtOC4xLDAtMTYuMiwwLjYtMjQuMiwyLjFjLTUuOS00MC43LTM5LjUtNjAuNS00MS02MS40bC04LjItNC44CgkJbC01LjQsNy44Yy02LjgsMTAuNS0xMS43LDIyLTE0LjYsMzQuMmMtNS41LDIzLjItMi4yLDQ1LDkuNiw2My42Yy0xNC4yLDcuOS0zNy4xLDkuOS00MS43LDEwSDI3N2MtOS45LDAtMTcuOSw4LTE3LjksMTcuOQoJCWMtMC40LDMzLjEsNS4yLDY2LDE2LjUsOTcuMWMxMywzNC4yLDMyLjQsNTkuMyw1Ny42LDc0LjdjMjguMiwxNy4zLDc0LjEsMjcuMiwxMjYuMiwyNy4yYzIzLjUsMC4xLDQ3LTIuMSw3MC4xLTYuNAoJCWMzMi4xLTUuOSw2My0xNy4xLDkxLjQtMzMuMmMyMy40LTEzLjYsNDQuNS0zMC44LDYyLjQtNTEuMWMyOS45LTMzLjksNDcuOC03MS43LDYxLjEtMTA1LjJoNS4zYzMyLjgsMCw1My0xMy4xLDY0LjEtMjQuMQoJCWM3LjQtNywxMy4yLTE1LjUsMTYuOS0yNWwyLjMtNi45TDgyNy4zLDQ2MS41eiBNMzEyLDQ4OS45aDUwLjdjMi40LDAsNC40LTIsNC40LTQuNHYtNDUuMWMwLTIuNC0yLTQuNC00LjQtNC41SDMxMgoJCWMtMi40LDAtNC40LDItNC40LDQuNHY0NS4yQzMwNy42LDQ4OCwzMDkuNiw0ODkuOSwzMTIsNDg5LjkgTTM4MS45LDQ4OS45aDUwLjdjMi40LDAsNC40LTIsNC40LTQuNHYtNDUuMWMwLTIuNC0yLTQuNC00LjQtNC41CgkJaC01MC43Yy0yLjUsMC00LjUsMi00LjUsNC41djQ1LjFDMzc3LjQsNDg4LDM3OS40LDQ4OS45LDM4MS45LDQ4OS45IE00NTIuNyw0OTBoNTAuN2MyLjQsMCw0LjQtMiw0LjQtNC40di00NS4xCgkJYzAtMi40LTItNC40LTQuNC00LjVoLTUwLjdjLTIuNCwwLTQuNCwyLTQuNCw0LjR2NDUuMkM0NDguMyw0ODgsNDUwLjMsNDg5LjksNDUyLjcsNDkwIE01MjIuOCw0OTBoNTAuN2MyLjQsMCw0LjQtMiw0LjUtNC40di00NS4xCgkJYzAtMi41LTItNC41LTQuNS00LjVoLTUwLjdjLTIuNCwwLTQuNCwyLTQuNCw0LjR2NDUuMkM1MTguNCw0ODgsNTIwLjMsNDkwLDUyMi44LDQ5MCBNMzgxLjgsNDI1aDUwLjdjMi40LDAsNC40LTIsNC40LTQuNXYtNDUuMQoJCWMwLTIuNC0yLTQuNC00LjQtNC40aC01MC43Yy0yLjUsMC00LjQsMi00LjUsNC40djQ1LjFDMzc3LjQsNDIzLDM3OS40LDQyNSwzODEuOCw0MjUgTTQ1Mi43LDQyNWg1MC43YzIuNCwwLDQuNC0yLDQuNC00LjV2LTQ1LjEKCQljMC0yLjQtMi00LjQtNC40LTQuNGgtNTAuN2MtMi40LDAtNC40LDItNC40LDQuNHY0NS4xQzQ0OC4zLDQyMyw0NTAuMyw0MjUsNDUyLjcsNDI1IE01MjIuOCw0MjVoNTAuN2MyLjUsMCw0LjQtMiw0LjUtNC41di00NS4xCgkJYzAtMi41LTItNC40LTQuNS00LjRoLTUwLjdjLTIuNCwwLTQuNCwyLTQuNCw0LjR2NDUuMUM1MTguNCw0MjMsNTIwLjMsNDI1LDUyMi44LDQyNSBNNTIyLjgsMzYwLjFoNTAuN2MyLjUsMCw0LjUtMiw0LjUtNC41di00NS4yCgkJYzAtMi40LTItNC40LTQuNS00LjRoLTUwLjdjLTIuNCwwLTQuNCwyLTQuNCw0LjR2NDUuMkM1MTguNCwzNTguMSw1MjAuMywzNjAuMSw1MjIuOCwzNjAuMSBNNTkzLjQsNDkwaDUwLjdjMi40LDAsNC40LTIsNC40LTQuNAoJCXYtNDUuMWMwLTIuNS0yLTQuNC00LjQtNC41aC01MC43Yy0yLjQsMC00LjQsMi00LjQsNC40djQ1LjJDNTg5LDQ4OCw1OTEsNDkwLDU5My40LDQ5MCIvPgo8L2c+Cjwvc3ZnPgo=",
+                icon_width: "20",
+                label: "Release",
+                label_color: "555",
+                status,
+                status_color: statusColor,
+                path: "release.svg"
+              };
+
+              const result = await github.rest.repos.createDispatchEvent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                event_type: "badge-update",
+                client_payload: payload
+              });
+              console.log(result);
+            } catch(error) {
+              console.error(error);
+              core.setFailed(error);
+            }

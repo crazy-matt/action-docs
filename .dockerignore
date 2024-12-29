@@ -1,0 +1,40 @@
+Dockerfile
+Dockerfile.*
+Dockerfile.compose
+
+# Macos stuff
+**.DS_Store
+
+# IDE
+**.vscode/
+**.fleet/
+**.idea/
+
+# Taskfile
+**taskfile.yaml
+**taskfile.*.yaml
+**taskfile.yml
+**taskfile.*.yml
+**.task/
+
+# Repo
+**.git/
+**.gitignore
+**.gitkeep
+**.github/
+**.linters/
+**.security/
+**.md
+
+# Dependency manager Mise
+**mise.toml
+
+# App dev
+**node_modules/
+**.env
+**.log
+**test/
+**tests/
+
+# Cloud platforms
+**.gcloudignore
