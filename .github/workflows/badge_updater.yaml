@@ -15,7 +15,7 @@ jobs:
           token: ${{ secrets.BOT_TOKEN }}
       - name: Prepare badges branch
         run: |
-          if git rev-parse --verify badges >/dev/null 2>&1; then
+          if git branch --list badges >/dev/null 2>&1; then
             git checkout badges
           else
             git checkout --orphan badges
