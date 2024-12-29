@@ -46,6 +46,39 @@ tasks:
       - echo "ROOT_ABS_PATH":"               {{.ROOT_ABS_PATH}}"
       - echo "ROOT_REL_PATH":"               {{.ROOT_REL_PATH}}"
 
+  docker_tag:
+    desc: Output the app version
+    cmd: echo "{{.APP_VERSION}}"
+
+  image_latest_version:
+    desc: Output the image latest version
+    cmd: echo "{{.DOCKER_IMAGE_LATEST_VERSION}}"
+
+  semver1_greater_than_semver2:
+    desc: Test if SEMVER1 is greater than SEMVER2
+    cmds:
+      - |
+        if [[ "{{.SEMVER1}}" != "{{.SEMVER2}}" && \
+          "$(printf "{{.SEMVER1}}\n{{.SEMVER2}}\n" | sort -V | head -n 1)" == "{{.SEMVER2}}" ]] \
+          || [[ "{{.FORCE}}" == "true" ]]; then
+          echo "true"
+        else
+          echo "false"
+        fi
+
+  release_needed:
+    desc: Return true if a new version of the binary has been released and requires a new docker image
+    vars:
+      IMAGE_LATEST_TAG:
+        sh: |
+          echo "${GITHUB_TOKEN}" | docker login ghcr.io -u {{.GHCR_USERNAME}} --password-stdin >/dev/null 2>&1
+          docker manifest inspect ghcr.io/{{.GIT_REPO_FULLNAME}}:latest | jq -r '.labels.org.opencontainers.image.version // ""'
+    cmd: |
+      SEMVER1="{{.APP_VERSION}}" \
+        SEMVER2="{{.IMAGE_LATEST_TAG}}" \
+        FORCE="${FORCE_RELEASE}" \
+        task docker:semver1_greater_than_semver2
+
   build:
     desc: Build Docker image
     cmds:
@@ -89,39 +122,6 @@ tasks:
         msg: 'GITHUB_TOKEN with write package permission required'
     status:
       - if [[ "$(task docker:release_needed)" == 'true' ]]; then exit 1; else exit 0; fi
-
-  docker_tag:
-    desc: Output the app version
-    cmd: echo "{{.APP_VERSION}}"
-
-  image_latest_version:
-    desc: Output the image latest version
-    cmd: echo "{{.DOCKER_IMAGE_LATEST_VERSION}}"
-
-  semver1_greater_than_semver2:
-    desc: Test if SEMVER1 is greater than SEMVER2
-    cmds:
-      - |
-        if [[ "{{.SEMVER1}}" != "{{.SEMVER2}}" && \
-          "$(printf "{{.SEMVER1}}\n{{.SEMVER2}}\n" | sort -V | head -n 1)" == "{{.SEMVER2}}" ]] \
-          || [[ "{{.FORCE}}" == "true" ]]; then
-          echo "true"
-        else
-          echo "false"
-        fi
-
-  release_needed:
-    desc: Return true if a new version of the binary has been released and requires a new docker image
-    vars:
-      IMAGE_LATEST_TAG:
-        sh: |
-          echo "${GITHUB_TOKEN}" | docker login ghcr.io -u {{.GHCR_USERNAME}} --password-stdin >/dev/null 2>&1
-          docker manifest inspect ghcr.io/{{.GIT_REPO_FULLNAME}}:latest | jq -r '.labels.org.opencontainers.image.version // ""'
-    cmd: |
-      SEMVER1="{{.APP_VERSION}}" \
-        SEMVER2="{{.IMAGE_LATEST_TAG}}" \
-        FORCE="${FORCE_RELEASE}" \
-        task docker:semver1_greater_than_semver2
 
   lint:
     desc: Lint Dockerfiles

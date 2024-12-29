@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   release:
-    name: Build, test and release
+    name: Build, test, scan and release
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -37,7 +37,7 @@ jobs:
 
       - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # ratchet:jdx/mise-action@v2
 
-      - name: Set up QEMU
+      - name: Set up QEMU # for multi-platform build
         uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # ratchet:docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
@@ -74,6 +74,12 @@ jobs:
             DOCKER_TAG=${{ env.DOCKER_TAG }}
             GIT_REPO_HTTP_URL=${{ github.server_url }}/${{ github.repository }}
             GIT_SHORT_SHA=${{ github.sha }}
+
+      - name: Run tests
+        id: test
+        run: |
+          task docker:test
+          task docker:security
 
       - name: Release
         id: release
