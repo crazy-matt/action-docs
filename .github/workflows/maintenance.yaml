@@ -20,7 +20,9 @@ jobs:
     # Lint commit messages failing if they're not conventional
     name: Lint commit messages
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]' || github.event.inputs.job == 'Lint commit messages'
+    if: |
+      (github.event_name != 'workflow_dispatch' && github.actor != 'dependabot[bot]') ||
+      github.event.inputs.job == 'Lint commit messages'
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
