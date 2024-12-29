@@ -7,7 +7,7 @@ on:
         description: |
           When the action-docs latest release has already been dockerized but
           you want to rebuild a Docker image.
-        required: true
+        required: false
         default: true
   schedule:
     - cron: '0 0 * * *' # Run every day at midnight
@@ -55,19 +55,16 @@ jobs:
           echo "IMAGE_LATEST_VERSION=$(task docker:image_latest_version)" >> $GITHUB_ENV
           echo "DOCKER_TAG=$(task docker:docker_tag)" >> $GITHUB_ENV
 
-      - name: Build Image
+      - name: Build single image
         uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # ratchet:docker/build-push-action@v6
         with:
           push: false
           file: Dockerfile
           context: .
-          platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          load: false
-          tags: |
-            ${{ env.IMAGE_LATEST_VERSION }}
-            ghcr.io/${{ github.repository }}:latest
+          load: true
+          tags: ${{ env.IMAGE_LATEST_VERSION }}
           build-args: |
             AUTHOR=${{ github.actor }}
             DOCKER_IMAGE_LATEST_VERSION=${{ env.IMAGE_LATEST_VERSION }}
@@ -83,30 +80,26 @@ jobs:
           task docker:test
           task docker:security
 
-      - name: Release
+      - name: Push Image
         id: release
-        run: task docker:push
-
-      # - name: Push Image
-      #   id: release
-      #   uses: docker/build-push-action@v6
-      #   with:
-      #     push: true
-      #     file: Dockerfile
-      #     context: .
-      #     platforms: linux/amd64,linux/arm64
-      #     cache-from: type=gha
-      #     cache-to: type=gha,mode=max
-      #     load: true
-      #     tags: |
-      #       ${{ env.IMAGE_LATEST_VERSION }}
-      #       ghcr.io/${{ github.repository }}:latest
-      #     build-args: |
-      #       AUTHOR=${{ github.actor }}
-      #       DOCKER_IMAGE_LATEST_VERSION=${{ env.IMAGE_LATEST_VERSION }}
-      #       DOCKER_TAG=${{ env.DOCKER_TAG }}
-      #       GIT_REPO_HTTP_URL=${{ github.server_url }}/${{ github.repository }}
-      #       GIT_SHORT_SHA=${{ github.sha }}
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          file: Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: false
+          tags: |
+            ${{ env.IMAGE_LATEST_VERSION }}
+            ghcr.io/${{ github.repository }}:latest
+          build-args: |
+            AUTHOR=${{ github.actor }}
+            DOCKER_IMAGE_LATEST_VERSION=${{ env.IMAGE_LATEST_VERSION }}
+            DOCKER_TAG=${{ env.DOCKER_TAG }}
+            GIT_REPO_HTTP_URL=${{ github.server_url }}/${{ github.repository }}
+            GIT_SHORT_SHA=${{ github.sha }}
 
       - name: Update release badge
         if: always()
