@@ -75,8 +75,10 @@ jobs:
             GIT_REPO_HTTP_URL=${{ github.server_url }}/${{ github.repository }}
             GIT_SHORT_SHA=${{ github.sha }}
 
-      - name: Run tests
+      - name: Test image
         id: test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
           task docker:test
           task docker:security

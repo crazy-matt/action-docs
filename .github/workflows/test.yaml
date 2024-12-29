@@ -55,8 +55,10 @@ jobs:
           build-args: |
             DOCKER_TAG=${{ env.DOCKER_TAG }}
 
-      - name: Run tests
+      - name: Test image
         id: test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
           task docker:test
           task docker:security
