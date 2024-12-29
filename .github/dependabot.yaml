@@ -20,7 +20,7 @@ updates:
         applies-to: version-updates
         update-types: [minor, patch]
 
-  - package-ecosystem: go
+  - package-ecosystem: gomod
     directory: /
     schedule:
       interval: weekly
