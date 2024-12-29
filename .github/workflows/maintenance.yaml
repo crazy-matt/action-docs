@@ -2,6 +2,11 @@ name: Maintenance
 
 on:
   workflow_dispatch:
+    inputs:
+      job:
+        description: Job to run
+        required: false
+        default: Branch Cleaner
   push:
     branches: [main]
   pull_request:
