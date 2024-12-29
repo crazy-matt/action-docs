@@ -16,11 +16,11 @@ jobs:
           fetch-depth: 0
       - name: Prepare badges branch
         run: |
-          if [[ -z "$(git branch --remotes | { grep --extended-regexp "^[[:space:]]+origin/badges$" || true; })" ]]; then
-            git switch --orphan badges
-            git rm -rf .
+          if git ls-remote --exit-code origin badges; then
+            git switch badges
           else
-            git checkout badges
+            git switch --orphan badges
+            git ls-files --error-unmatch . > /dev/null 2>&1 && git rm -rf .
           fi
       - name: Create badge
         uses: emibcn/badge-action@808173dd03e2f30c980d03ee49e181626088eee8 # ratchet:emibcn/badge-action@v2
