@@ -20,7 +20,7 @@ jobs:
     # Lint commit messages failing if they're not conventional
     name: Lint commit messages
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]'
+    if: github.actor != 'dependabot[bot]' || github.event.inputs.job == 'Lint commit messages'
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
@@ -29,6 +29,7 @@ jobs:
   pin_actions_and_docker_images:
     name: Pin Actions and Docker images
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.job == 'Pin Actions and Docker images'
     permissions:
       contents: write
     steps:
@@ -72,7 +73,7 @@ jobs:
   dependabot_automerger:
     name: Dependabot Automerger
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    if: github.event.pull_request.user.login == 'dependabot[bot]' || github.event.inputs.job == 'Dependabot Automerger'
     permissions:
       contents: write
       pull-requests: write
@@ -92,7 +93,7 @@ jobs:
   branch_cleaner:
     name: Branch Cleaner
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event.inputs.job == 'Branch Cleaner'
     steps:
       - name: Check stale branches
         id: branch_cleaner
