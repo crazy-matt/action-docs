@@ -44,9 +44,7 @@ jobs:
   pin_actions_and_docker_images:
     name: Pin Actions and Docker images
     runs-on: ubuntu-latest
-    if: github.event.inputs.job == 'Pin Actions and Docker images' ||
-      github.event_name == 'push' ||
-      github.event_name == 'pull_request'
+    if: github.event.inputs.job == 'Pin Actions and Docker images' || github.event_name == 'push' || github.event_name == 'pull_request'
     permissions:
       contents: write
       pull-requests: read
@@ -87,9 +85,9 @@ jobs:
           else
             echo "No changes to commit."
           fi
-
   dependabot_automerger:
     name: Dependabot Automerger
+
     runs-on: ubuntu-latest
     if: github.event.pull_request.user.login == 'dependabot[bot]' || github.event.inputs.job == 'Dependabot Automerger'
     permissions:
@@ -107,9 +105,9 @@ jobs:
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
   branch_cleaner:
     name: Branch Cleaner
+
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event.inputs.job == 'Branch Cleaner'
     steps:
@@ -135,3 +133,5 @@ jobs:
             --form-string "title=${{ github.repository }} Stale Branches Cleanup" \
             --form-string "url=https://github.com/${{ github.repository }}/branches/all" \
             https://api.pushover.net/1/messages.json
+
+
