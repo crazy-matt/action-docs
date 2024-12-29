@@ -3,16 +3,10 @@ name: Maintenance
 on:
   workflow_dispatch:
     inputs:
-      name:
-        type: choice
-        description: Who to greet
-        options: 
-        - monalisa
-        - cschleiden
       job:
         description: Job to run
         type: choice
-        options: 
+        options:
           - Lint commit messages
           - Pin Actions and Docker images
           - Dependabot Automerger
