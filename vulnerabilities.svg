@@ -1,0 +1,20 @@
+<svg width="162.7" height="20" viewBox="0 0 1627 200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="Vulnerabilities: passing">
+  <title>Vulnerabilities: passing</title>
+  <linearGradient id="a" x2="0" y2="100%">
+    <stop offset="0" stop-opacity=".1" stop-color="#EEE"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <mask id="m"><rect width="1627" height="200" rx="30" fill="#FFF"/></mask>
+  <g mask="url(#m)">
+    <rect width="1109" height="200" fill="#555"/>
+    <rect width="518" height="200" fill="#3C1" x="1109"/>
+    <rect width="1627" height="200" fill="url(#a)"/>
+  </g>
+  <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
+    <text x="290" y="148" textLength="779" fill="#000" opacity="0.25">Vulnerabilities</text>
+    <text x="280" y="138" textLength="779">Vulnerabilities</text>
+    <text x="1164" y="148" textLength="418" fill="#000" opacity="0.25">passing</text>
+    <text x="1154" y="138" textLength="418">passing</text>
+  </g>
+  <image x="40" y="35" width="200" height="130" xlink:href="data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjIiIGJhc2VQcm9maWxlPSJ0aW55LXBzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMSAzNiIgd2lkdGg9IjMxIiBoZWlnaHQ9IjM2Ij4KCTx0aXRsZT5zaGllbGRfMTA2NjYwLXN2ZzwvdGl0bGU+Cgk8c3R5bGU+CgkJdHNwYW4geyB3aGl0ZS1zcGFjZTpwcmUgfQoJCS5zMCB7IGZpbGw6ICNmZmI0MDA7c3Ryb2tlOiAjZmZmZmZmO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS13aWR0aDogMCB9IAoJCS5zMSB7IGZpbGw6ICMwNzBjMmI7c3Ryb2tlOiAjZmZmZmZmO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS13aWR0aDogMCB9IAoJPC9zdHlsZT4KCTxwYXRoIGlkPSJMYXllciIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGFzcz0iczAiIGQ9Im0xNS41MiAzNWMtMTUuOTMtNi4xNy0xNC40OC0yNy4yLTE0LjQ4LTI3LjJjOS42NCAxLjc4IDE0LjQ4LTYuOCAxNC40OC02LjhjMCAwIDQuODMgOC41OCAxNC40NSA2LjhjMCAwIDEuNDQgMjEuMDMtMTQuNDUgMjcuMnoiIC8+Cgk8cGF0aCBpZD0iTGF5ZXIiIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xhc3M9InMxIiBkPSJtMTAgMTdsMyAzbDgtOGwyIDJsLTEwIDEwbC01LTVsMi0yeiIgLz4KPC9zdmc+"/>
+</svg>
