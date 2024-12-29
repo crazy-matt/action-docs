@@ -23,10 +23,15 @@ jobs:
     if: |
       (github.event_name != 'workflow_dispatch' && github.actor != 'dependabot[bot]') ||
       github.event.inputs.job == 'Lint commit messages'
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
       - uses: wagoid/commitlint-github-action@0184f5a228ee06430bb9e67d65f73a1a6767496a # ratchet:wagoid/commitlint-github-action@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   pin_actions_and_docker_images:
     name: Pin Actions and Docker images
@@ -34,6 +39,7 @@ jobs:
     if: github.event_name != 'workflow_dispatch' || github.event.inputs.job == 'Pin Actions and Docker images'
     permissions:
       contents: write
+      pull-requests: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
@@ -57,7 +63,7 @@ jobs:
         run: go install github.com/sethvargo/ratchet@latest
       - name: Pin
         run: ratchet pin $(ls .github/workflows/*.{yaml,yml} 2>/dev/null)
-      - name: Push changes if any
+      - name: Push changes
         run: |
           if [[ -n $(git status --porcelain) ]]; then
             gpg --import <(echo "${{ secrets.BOT_GPG_PRIVATE_KEY_BASE64 }}" | base64 -d)

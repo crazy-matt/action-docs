@@ -20,8 +20,6 @@ vars:
         | sed -e 's#//github.com/*##')"
   GIT_SHORT_SHA:
     sh: git rev-parse --short HEAD
-  IMAGE_LATEST_TAG:
-    sh: crane ls ghcr.io/{{.GIT_REPO_FULLNAME}} | sort -V | tail -n 1 || echo ''
   DOCKER_IMAGE_NAME: ghcr.io/{{.GIT_REPO_FULLNAME}}
   DOCKER_IMAGE_LATEST_VERSION: '{{.DOCKER_IMAGE_NAME}}:{{.APP_VERSION}}'
   ROOT_ABS_PATH:
@@ -45,7 +43,6 @@ tasks:
       - echo "GIT_REPO_FULLNAME":"           {{.GIT_REPO_FULLNAME}}"
       - echo "GIT_REPO_HTTP_URL":"           {{.GIT_REPO_HTTP_URL}}"
       - echo "GIT_SHORT_SHA":"               {{.GIT_SHORT_SHA}}"
-      - echo "IMAGE_LATEST_TAG":"            {{.IMAGE_LATEST_TAG}}"
       - echo "ROOT_ABS_PATH":"               {{.ROOT_ABS_PATH}}"
       - echo "ROOT_REL_PATH":"               {{.ROOT_REL_PATH}}"
 
@@ -71,6 +68,18 @@ tasks:
 
   release_needed:
     desc: Return true if a new version of the binary has been released and requires a new docker image
+    vars:
+      IMAGE_LATEST_TAG:
+        sh: |
+          output=$(crane ls ghcr.io/{{.GIT_REPO_FULLNAME}} 2>&1 || true)
+          if echo "$output" | grep -q "NAME_UNKNOWN"; then
+            echo ''
+          elif echo "$output" | grep -q "UNAUTHORIZED"; then
+            echo "$output" >&2
+            exit 1
+          else
+            echo "$output" | sort -V | tail -n 1
+          fi
     cmd: |
       SEMVER1="{{.APP_VERSION}}" \
         SEMVER2="{{.IMAGE_LATEST_TAG}}" \
