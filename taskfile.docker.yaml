@@ -79,6 +79,12 @@ tasks:
         FORCE="${FORCE_RELEASE}" \
         task docker:semver1_greater_than_semver2
 
+  lint:
+    desc: Lint Dockerfiles
+    cmds:
+      - echo "📒 {{.TASK}}"
+      - hadolint --config .linters/hadolint.yaml --format tty Dockerfile
+
   build:
     desc: Build Docker image
     cmds:
@@ -98,21 +104,48 @@ tasks:
 
   test:
     desc: Run tests
-    deps: [build]
     cmds:
       - echo "📒 {{.TASK}}"
+      - if [ "${GITHUB_ACTIONS}" != "true" ]; then task docker:build; fi
       - |
         if ! [ "v$(docker run --rm {{.DOCKER_IMAGE_LATEST_VERSION}} --version)" == "{{.APP_VERSION}}" ]; then
+          echo "❌ Image validation failed!"
           exit 1
         else
           echo -e "✅ Image validated\n"
         fi
 
-  push:
-    desc: Push image to registry
-    deps: [build, test, security]
+  security:
+    desc: Run all security scanners
+    cmds:
+      - defer: \rm -f .task_errors
+      - cmd: task docker:security:snyk || touch .task_errors
+      - cmd: task docker:security:trivy || touch .task_errors
+      - cmd: if [ -f .task_errors ]; then exit 1; fi
+
+  security:snyk:
+    desc: Scan for Docker image vulnerabilities with Snyk, image required.
     cmds:
       - echo "📒 {{.TASK}}"
+      - snyk auth "${SNYK_TOKEN}"; snyk container test {{.DOCKER_IMAGE_LATEST_VERSION}} --file=Dockerfile
+      # ignore_error: true  # needed when I reached the free tier limit
+
+  security:trivy:
+    desc: Scan for Docker image vulnerabilities with Trivy (https://github.com/aquasecurity/trivy-action?tab=readme-ov-file#trivy-config-file), image required.
+    cmds:
+      - echo "📒  {{.TASK}}"
+      - |
+        trivy image --config .security/trivy.yaml \
+          --ignorefile .security/trivyignore \
+          --format table \
+          {{.DOCKER_IMAGE_LATEST_VERSION}}
+
+  push:
+    desc: Push image to registry
+    deps: [test, security]
+    cmds:
+      - echo "📒 {{.TASK}}"
+      - if [ "${GITHUB_ACTIONS}" != "true" ]; then task docker:build; fi
       - echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
       - docker tag {{.DOCKER_IMAGE_LATEST_VERSION}} {{.DOCKER_IMAGE_NAME}}:latest
       - docker push {{.DOCKER_IMAGE_LATEST_VERSION}}
@@ -122,36 +155,3 @@ tasks:
         msg: 'GITHUB_TOKEN with write package permission required'
     status:
       - if [[ "$(task docker:release_needed)" == 'true' ]]; then exit 1; else exit 0; fi
-
-  lint:
-    desc: Lint Dockerfiles
-    cmds:
-      - echo "📒 {{.TASK}}"
-      - hadolint --config .linters/hadolint.yaml --format tty Dockerfile
-
-  security:
-    desc: Run all security scanners
-    cmds:
-      - defer: \rm -f .task_errors
-      - cmd: task security:snyk || touch .task_errors
-      - cmd: task security:trivy || touch .task_errors
-      - cmd: if [ -f .task_errors ]; then exit 1; fi
-
-  security:snyk:
-    desc: Scan for Docker image vulnerabilities with Snyk
-    deps: [build]
-    cmds:
-      - echo "📒 {{.TASK}}"
-      - snyk auth "${SNYK_TOKEN}"; snyk container test {{.DOCKER_IMAGE_LATEST_VERSION}} --file=Dockerfile
-      # ignore_error: true  # needed when I reached the free tier limit
-
-  security:trivy:
-    desc: Scan for Docker image vulnerabilities with Trivy (https://github.com/aquasecurity/trivy-action?tab=readme-ov-file#trivy-config-file)
-    deps: [build]
-    cmds:
-      - echo "📒  {{.TASK}}"
-      - |
-        trivy image --config .security/trivy.yaml \
-          --ignorefile .security/trivyignore \
-          --format table \
-          {{.DOCKER_IMAGE_LATEST_VERSION}}
