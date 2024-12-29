@@ -15,7 +15,7 @@ jobs:
           token: ${{ secrets.BOT_TOKEN }}
       - name: Prepare badges branch
         run: |
-          if git show-ref --quiet refs/heads/badges; then
+          if git rev-parse --verify badges >/dev/null 2>&1; then
             git checkout badges
           else
             git checkout --orphan badges
@@ -41,7 +41,7 @@ jobs:
             git config commit.gpgsign true
             git status --porcelain
             git add --all
-            git commit -m "ci: pin actions and Docker images in workflows"
+            git commit -m "ci: update ${{ github.event.client_payload.label }} badge"
             git push origin badges --force
           else
             echo "No changes to commit."
