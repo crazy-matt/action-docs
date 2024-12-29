@@ -36,9 +36,9 @@ jobs:
           [[ "$(task docker:release_needed)" == 'true' ]] || exit 0
       - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # ratchet:jdx/mise-action@v2
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # ratchet:docker/setup-qemu-action@v3
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # ratchet:docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -48,7 +48,7 @@ jobs:
           echo "IMAGE_LATEST_VERSION=$(task docker:image_latest_version)" >> $GITHUB_ENV
           echo "DOCKER_TAG=$(task docker:docker_tag)" >> $GITHUB_ENV
       - name: Build Image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # ratchet:docker/build-push-action@v6
         with:
           push: false
           file: Dockerfile
