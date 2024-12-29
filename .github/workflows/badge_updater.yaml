@@ -13,9 +13,10 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
       - name: Prepare badges branch
         run: |
-          if git branch --list badges >/dev/null 2>&1; then
+          if git show-ref --verify --quiet refs/heads/badges; then
             git checkout badges
           else
             git checkout --orphan badges
