@@ -1,5 +1,6 @@
 [tools]
 actionlint = "latest"
+crane = "latest"
 gitleaks = "latest"
 hadolint = "latest"
 markdownlint-cli2 = "latest"

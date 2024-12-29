@@ -30,6 +30,7 @@ jobs:
 
       - name: Check if release needed
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FORCE_RELEASE: ${{ github.event.inputs.force_release }}
         run: |
           sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
