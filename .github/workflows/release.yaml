@@ -17,10 +17,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
-permissions:
-  contents: read
-  packages: write
-
 jobs:
   release:
     name: Build, test and release
@@ -28,11 +24,10 @@ jobs:
     permissions:
       contents: write
       security-events: write # for Trivy reporting
+      packages: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
-        with:
-          submodules: true
       - name: Check if release needed
         env:
           FORCE_RELEASE: ${{ github.event.inputs.force_release }}
@@ -40,9 +35,58 @@ jobs:
           sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
           [[ "$(task docker:release_needed)" == 'true' ]] || exit 0
       - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # ratchet:jdx/mise-action@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fetch image metadata
+        run: |
+          echo "IMAGE_LATEST_VERSION=$(task docker:image_latest_version)" >> $GITHUB_ENV
+          echo "DOCKER_TAG=$(task docker:docker_tag)" >> $GITHUB_ENV
+      - name: Build Image
+        uses: docker/build-push-action@v6
+        with:
+          push: false
+          file: Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ${{ env.IMAGE_LATEST_VERSION }}
+            ghcr.io/${{ github.repository }}:latest
+          build-args: |
+            AUTHOR=${{ github.actor }}
+            DOCKER_IMAGE_LATEST_VERSION=${{ env.IMAGE_LATEST_VERSION }}
+            DOCKER_TAG=${{ env.DOCKER_TAG }}
+            GIT_REPO_HTTP_URL=${{ github.server_url }}/${{ github.repository }}
+            GIT_SHORT_SHA=${{ github.sha }}
       - name: Release
         id: release
         run: task docker:push
+      # - name: Push Image
+      #   id: release
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     push: true
+      #     file: Dockerfile
+      #     context: .
+      #     platforms: linux/amd64,linux/arm64
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
+      #     tags: |
+      #       ${{ env.IMAGE_LATEST_VERSION }}
+      #       ghcr.io/${{ github.repository }}:latest
+      #     build-args: |
+      #       AUTHOR=${{ github.actor }}
+      #       DOCKER_IMAGE_LATEST_VERSION=${{ env.IMAGE_LATEST_VERSION }}
+      #       DOCKER_TAG=${{ env.DOCKER_TAG }}
+      #       GIT_REPO_HTTP_URL=${{ github.server_url }}/${{ github.repository }}
+      #       GIT_SHORT_SHA=${{ github.sha }}
       - name: Update release badge
         if: always()
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # ratchet:actions/github-script@v7

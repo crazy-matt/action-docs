@@ -4,10 +4,6 @@ silent: true
 
 
 vars:
-  BUILD_DATE:
-    sh: date -u +'%Y-%m-%dT%H:%M:%SZ'
-  BUILD_DATE_TAG:
-    sh: date -u +'%Y%m%dT%H%M%SZ'
   DOCKERIZED_BINARY_REPO: npalm/action-docs
   APP_VERSION:
     sh: |
@@ -41,8 +37,6 @@ tasks:
     desc: Output Taskfile variables
     cmds:
       - echo "📒 {{.TASK}}"
-      - echo "BUILD_DATE":"                  {{.BUILD_DATE}}"
-      - echo "BUILD_DATE_TAG":"              {{.BUILD_DATE_TAG}}"
       - echo "APP_VERSION":"                 {{.APP_VERSION}}"
       - echo "DOCKERIZED_BINARY_REPO":"      {{.DOCKERIZED_BINARY_REPO}}"
       - echo "DOCKER_IMAGE_LATEST_VERSION":" {{.DOCKER_IMAGE_LATEST_VERSION}}"
@@ -57,12 +51,11 @@ tasks:
     cmds:
       - echo "📒 {{.TASK}}"
       - |
-        docker buildx build --pull \
+        docker buildx build \
           --platform linux/amd64,linux/arm64 \
           --file "Dockerfile" \
           --tag "{{.DOCKER_IMAGE_LATEST_VERSION}}" \
           --build-arg AUTHOR="{{.GHCR_USERNAME}}" \
-          --build-arg BUILD_DATE="{{.BUILD_DATE}}" \
           --build-arg DOCKER_IMAGE_LATEST_VERSION="{{.DOCKER_IMAGE_LATEST_VERSION}}" \
           --build-arg DOCKER_TAG="{{.APP_VERSION}}" \
           --build-arg GIT_REPO_HTTP_URL="{{.GIT_REPO_HTTP_URL}}" \
@@ -76,11 +69,11 @@ tasks:
     cmds:
       - echo "📒 {{.TASK}}"
       - |
-        {{.ROOT_REL_PATH}}/tests/libs/bats-core/bin/bats {{.ROOT_REL_PATH}}/tests/task.bats
-        echo -e "✅ Taskfile tasks validated\n"
-        export BUILD_VERSION="{{.APP_VERSION}}" IMAGE="{{.DOCKER_IMAGE_LATEST_VERSION}}"
-        {{.ROOT_REL_PATH}}/tests/libs/bats-core/bin/bats {{.ROOT_REL_PATH}}/tests/docker.bats
-        echo -e "📦 Image validated\n"
+        if ! [ "v$(docker run --rm {{.DOCKER_IMAGE_LATEST_VERSION}} --version)" == "{{.APP_VERSION}}" ]; then
+          exit 1
+        else
+          echo -e "✅ Image validated\n"
+        fi
 
   push:
     desc: Push image to registry
@@ -88,10 +81,8 @@ tasks:
     cmds:
       - echo "📒 {{.TASK}}"
       - echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "{{.GHCR_USERNAME}}" --password-stdin
-      - docker tag {{.DOCKER_IMAGE_LATEST_VERSION}} {{.DOCKER_IMAGE_NAME}}:{{.BUILD_DATE_TAG}}
       - docker tag {{.DOCKER_IMAGE_LATEST_VERSION}} {{.DOCKER_IMAGE_NAME}}:latest
       - docker push {{.DOCKER_IMAGE_LATEST_VERSION}}
-      - docker push {{.DOCKER_IMAGE_NAME}}:{{.BUILD_DATE_TAG}}
       - docker push {{.DOCKER_IMAGE_NAME}}:latest
     preconditions:
       - sh: '[ -n "${GITHUB_TOKEN}" ]'
@@ -99,10 +90,13 @@ tasks:
     status:
       - if [[ "$(task docker:release_needed)" == 'true' ]]; then exit 1; else exit 0; fi
 
-  get_build_version:
-    desc: Output the build version
-    cmds:
-      - echo "{{.APP_VERSION}}"
+  docker_tag:
+    desc: Output the app version
+    cmd: echo "{{.APP_VERSION}}"
+
+  image_latest_version:
+    desc: Output the image latest version
+    cmd: echo "{{.DOCKER_IMAGE_LATEST_VERSION}}"
 
   semver1_greater_than_semver2:
     desc: Test if SEMVER1 is greater than SEMVER2

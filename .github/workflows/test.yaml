@@ -17,20 +17,40 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     permissions:
       contents: write
+      packages: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
-        with:
-          submodules: true
       - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # ratchet:jdx/mise-action@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fetch image metadata
+        run: |
+          echo "IMAGE_LATEST_VERSION=$(task docker:image_latest_version)" >> $GITHUB_ENV
+          echo "DOCKER_TAG=$(task docker:docker_tag)" >> $GITHUB_ENV
+      - name: Build Image
+        uses: docker/build-push-action@v6
+        with:
+          push: false
+          file: Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ${{ env.IMAGE_LATEST_VERSION }}
+          build-args: |
+            DOCKER_TAG=${{ env.DOCKER_TAG }}
       - name: Run tests
         id: test
         run: |
-          set -e
           task lint
           task docker:test
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update tests badge
         if: always()
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # ratchet:actions/github-script@v7
