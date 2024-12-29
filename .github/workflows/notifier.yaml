@@ -32,7 +32,7 @@ jobs:
         run: |
           monitored_workflows=$(gh run list --commit "${{ github.event.workflow_run.head_sha }}" --json databaseId,name,url,status,conclusion | jq -c '[.[] | select(.name != "Notifier")]')
           not_completed_count=$(echo "${monitored_workflows}" | jq '[.[] | select(.status != "completed")] | length')
-          failure_count=$(echo "${monitored_workflows}" | jq '[.[] | select(.conclusion != "success")] | length')
+          failure_count=$(echo "${monitored_workflows}" | jq '[.[] | select(.conclusion != "success" and .conclusion != "skipped" and .conclusion != "cancelled")] | length')
           if [[ ${not_completed_count} -eq 0 && ${failure_count} -ne 0 ]]; then
             disabled_workflows=$(gh workflow list --all --json name,state | jq -c '[.[] | select(.state != "active")] | @json')
             echo "has_failure=true" >> $GITHUB_OUTPUT
