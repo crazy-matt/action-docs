@@ -113,7 +113,7 @@ jobs:
     steps:
       - name: Check stale branches
         id: branch_cleaner
-        uses: crazy-matt/manage-stale-branches@b16f7b346c9263c74f276709feaa5819f87f6951 # ratchet:crazy-matt/manage-stale-branches@1.0.2
+        uses: crazy-matt/manage-stale-branches@a150b157774e5a10a3b187579c49798f200af47e # ratchet:crazy-matt/manage-stale-branches@1.1.1
         with:
           gh_token: ${{ secrets.GITHUB_TOKEN }}
           stale_older_than: 100
