@@ -8,16 +8,20 @@ A dockerized [action-docs](https://github.com/npalm/action-docs).
 
 ## Usage
 
-__Generate an action documentation__
+### Generate an action documentation
 
 ```shell
 docker run -t --rm -v $PWD:/work ghcr.io/crazy-matt/action-docs:latest --update-readme
 ```
 
-__Help__
+### Help
 
 ```shell
 docker run -t --rm -v $PWD:/work ghcr.io/crazy-matt/action-docs:latest --help
 ```
 
 > Check-out the `action-docs` documentation [here](https://github.com/npalm/action-docs#readme).
+
+### Release Cycle
+
+The Docker image tags now match the [action-docs](https://github.com/npalm/action-docs) versions and should be available in less than 24 hours.
