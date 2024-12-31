@@ -10,9 +10,8 @@ on:
           - Lint commit messages
           - Pin Actions and Docker images
           - Dependabot Automerger
-          - Branch Cleaner
         required: false
-        default: Branch Cleaner
+        default: Pin Actions and Docker images
   push:
     branches: [main]
   pull_request:
@@ -44,7 +43,10 @@ jobs:
   pin_actions_and_docker_images:
     name: Pin Actions and Docker images
     runs-on: ubuntu-latest
-    if: github.event.inputs.job == 'Pin Actions and Docker images' || github.event_name == 'push' || github.event_name == 'pull_request'
+    if: |
+      github.event.inputs.job == 'Pin Actions and Docker images' ||
+      github.event_name == 'push' ||
+      github.event_name == 'pull_request'
     permissions:
       contents: write
       pull-requests: read
@@ -85,11 +87,14 @@ jobs:
           else
             echo "No changes to commit."
           fi
+
   dependabot_automerger:
     name: Dependabot Automerger
-
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]' || github.event.inputs.job == 'Dependabot Automerger'
+    if: |
+      github.event.pull_request.user.login == 'dependabot[bot]' ||
+      github.event.inputs.job == 'Dependabot Automerger' ||
+      github.event_name == 'schedule'
     permissions:
       contents: write
       pull-requests: write
@@ -105,33 +110,3 @@ jobs:
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-  branch_cleaner:
-    name: Branch Cleaner
-
-    runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event.inputs.job == 'Branch Cleaner'
-    steps:
-      - name: Check stale branches
-        id: branch_cleaner
-        uses: crazy-matt/manage-stale-branches@b16f7b346c9263c74f276709feaa5819f87f6951 # ratchet:crazy-matt/manage-stale-branches@1.0.2
-        with:
-          gh_token: ${{ secrets.GITHUB_TOKEN }}
-          stale_older_than: 100
-          suggestions_older_than: 210
-          dry_run: true
-          archive_stale: true
-          excluded_branches: |
-            origin/main
-            origin/badges
-      - name: Send notification
-        if: github.event_name == 'schedule' && steps.branch_cleaner.outputs.message != ''
-        run: |
-          curl -s \
-            --form-string "token=${{ secrets.PUSHOVER_API_TOKEN }}" \
-            --form-string "user=${{ secrets.PUSHOVER_USER_KEY }}" \
-            --form-string "message=${{ steps.branch_cleaner.outputs.message }}" \
-            --form-string "title=${{ github.repository }} Stale Branches Cleanup" \
-            --form-string "url=https://github.com/${{ github.repository }}/branches/all" \
-            https://api.pushover.net/1/messages.json
-
-
