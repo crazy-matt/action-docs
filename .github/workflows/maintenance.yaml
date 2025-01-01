@@ -9,16 +9,12 @@ on:
         options:
           - Lint commit messages
           - Pin Actions and Docker images
-          - Dependabot Automerger
         required: false
         default: Pin Actions and Docker images
   push:
     branches: [main]
   pull_request:
     branches: [main]
-  schedule:
-    # Run the 1st of each month at midnight
-    - cron: '0 0 1 * *'
 
 jobs:
   lint_commits:
@@ -91,10 +87,7 @@ jobs:
   dependabot_automerger:
     name: Dependabot Automerger
     runs-on: ubuntu-latest
-    if: |
-      github.event.pull_request.user.login == 'dependabot[bot]' ||
-      github.event.inputs.job == 'Dependabot Automerger' ||
-      github.event_name == 'schedule'
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     permissions:
       contents: write
       pull-requests: write
