@@ -8,7 +8,7 @@ on:
           When the action-docs latest release has already been dockerized but
           you want to rebuild a Docker image.
         required: false
-        default: true
+        default: false
   schedule:
     - cron: '0 0 * * *' # Run every day at midnight
 
