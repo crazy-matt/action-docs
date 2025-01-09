@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
-      - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # ratchet:jdx/mise-action@v2
+      - uses: jdx/mise-action@5083fe46898c414b2475087cc79da59e7da859e8 # ratchet:jdx/mise-action@v2
       - name: Lint docker image
         if: always()
         run: task docker:lint

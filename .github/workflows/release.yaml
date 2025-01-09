@@ -39,7 +39,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/cancel"
 
-      - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # ratchet:jdx/mise-action@v2
+      - uses: jdx/mise-action@5083fe46898c414b2475087cc79da59e7da859e8 # ratchet:jdx/mise-action@v2
 
       - name: Set up QEMU # for multi-platform build
         uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # ratchet:docker/setup-qemu-action@v3
