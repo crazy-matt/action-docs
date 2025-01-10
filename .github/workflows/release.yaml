@@ -117,7 +117,7 @@ jobs:
           script: |
             try {
               const outcome = "${{ steps.release.outcome }}";
-              const status = outcome === "success" ? "passing" : "failing";
+              const status = (outcome === "success" || outcome === "skipped") ? "passing" : "failing";
               const statusColor = outcome === "success" ? "green" : "red";
 
               const payload = {
