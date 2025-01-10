@@ -70,16 +70,7 @@ tasks:
     desc: Return true if a new version of the binary has been released and requires a new docker image
     vars:
       IMAGE_LATEST_TAG:
-        sh: |
-          output=$(crane ls ghcr.io/{{.GIT_REPO_FULLNAME}} 2>&1 || true)
-          if echo "$output" | grep -q "NAME_UNKNOWN"; then
-            echo ''
-          elif echo "$output" | grep -q "UNAUTHORIZED"; then
-            echo "$output" >&2
-            exit 1
-          else
-            echo "$output" | sort -V | tail -n 1
-          fi
+        sh: crane ls ghcr.io/{{.GIT_REPO_FULLNAME}} | sort -V | tail -n 1
     cmd: |
       SEMVER1="{{.APP_VERSION}}" \
         SEMVER2="{{.IMAGE_LATEST_TAG}}" \
