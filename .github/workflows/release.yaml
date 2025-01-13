@@ -1,6 +1,9 @@
 name: Release
 
 on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
   workflow_dispatch:
     inputs:
       force_release:
@@ -17,14 +20,96 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Build, test, scan and release
+  test:
+    name: Build, test, scan
     runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
     permissions:
-      actions: write
       contents: write
-      security-events: write # for Trivy reporting
+      packages: read
+      security-events: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+
+      - uses: jdx/mise-action@5083fe46898c414b2475087cc79da59e7da859e8 # ratchet:jdx/mise-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # ratchet:docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # ratchet:docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch image metadata
+        run: |
+          echo "IMAGE_LATEST_VERSION=$(task docker:image_latest_version)" >> $GITHUB_ENV
+          echo "DOCKER_TAG=$(task docker:docker_tag)" >> $GITHUB_ENV
+
+      - name: Build single image
+        uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc # ratchet:docker/build-push-action@v6
+        with:
+          push: false
+          file: Dockerfile
+          context: .
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+          tags: ${{ env.IMAGE_LATEST_VERSION }}
+          build-args: DOCKER_TAG=${{ env.DOCKER_TAG }}
+
+      - name: Test image
+        id: test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          task docker:test
+          task docker:security
+
+      - name: Update image tests badge
+        if: always()
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # ratchet:actions/github-script@v7
+        with:
+          script: |
+            try {
+              const outcome = "${{ steps.test.outcome }}";
+              const status = outcome === "success" ? "passing" : "failing";
+              const statusColor = outcome === "success" ? "green" : "red";
+
+              const payload = {
+                icon: "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjIiIGJhc2VQcm9maWxlPSJ0aW55LXBzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NiA0NiIgd2lkdGg9IjQ2IiBoZWlnaHQ9IjQ2Ij4KCTx0aXRsZT51c2FiaWxpdHlfdGVzdGluZ19pY29uXzE1MDMyNC1zdmctc3ZnPC90aXRsZT4KCTxkZWZzPgoJCTxpbWFnZSAgd2lkdGg9IjQ0IiBoZWlnaHQ9IjQ0IiBpZD0iaW1nMSIgaHJlZj0iZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFDd0FBQUFzQ0FNQUFBQXBXcW96QUFBQUFYTlNSMElCMmNrc2Z3QUFBTkpRVEZSRjNkN2ZEUElOTmM4NDB0UFYvLy8vQVA4QXNMSzJMdFF4dUxxOTI5emU3ZTN1cGFpczdlM3VDTzBKNHVQa3ZzRERrNkthUE1wQXFhdXZ6YzdROFBEeHJLNnkxTlhYMytEaEZ1Z1hPY3c5cUt1dXk4M1B2Yi9DanFPVkJ2Z0hwS2FycjdHMXhzZktuYUNrYnE5MDl2YjN6Yy9SL1B6OC92NytvNmFxaWFXUEEvc0QwZExVMmRyY25xQ2x1NzNBcXF5dzgvVDBwYWVyNk9ucTRPSGprNktaN3UvdzB0VFZYTGRpTWRFMTd1L3dsNkNldjhERDR1UGt6cy9Tc2JPMjgvVDAyZHJibVp5aHA2cXUzZC9nNE9IajcrL3cxbjJGQ3dBQUFFWjBVazVULy8vLy93RC8vLy8vLy8vL0lQL1EvLy8vLy84QS8vLy8vLy8vLy8vLy8vLy8vLy8vQVA4QUFQLy8vLy8vLy8vL0FQOEE4UDhBLy8vL0VQLy9vZi8vLy8vLy8vL2hBQVF1MVIwQUFBR3NTVVJCVkhpY3BkUnBVOEl3RUFiZ2xPYjF3cXR5Q2hUbGxFT2dnRklFeGZ2Ly95VTNUVnZhUUNHTSt3VXk4MHk2MlUyV01VTXpVaVpuQm5UREVQakkxSWtqaVUzT2p3RitBcHllQVdtK1Bjd05mSzZETmNMSEJ4M3dJSHhRR29kaVhPek80RDg0bnN2bDFiVmgzV1N5Y3JVVDU5WmI1dmZnUXBIUWJhbGNzYXYwNTI0bnZpZFJDeFoxV3JCa1hBWWF6WFZHTFhtNjdiaXQzcVFIb0pPRXUrZ3B6V2o1cDl6RWZlQlJiZDFBSmhKckNyMnlJUi9CampESDhjdWNWVEhGbUZ1b1JLeW9CRVVWbVJobTNqT2IwQ1pUNmFTVitBa2p2dVhXUGZ0MUdwSUtMYS9BaXU4OEV6R1ordGdsTnc4c2xkNklZZmxjeHBUR1M2QkR5MHRZcU5pcmhvRXlEL2NPa2t0aHFXQ1orQUlsWDlpaHBjKzlic1hMNENaRW9xWTJKU3dKVUZkc0U4Z2w0RHp3RnNjTkZMbUtWMTd4WnU4ZFJhZUJ3Z2IydzZUbVloRFNqNTRvb2JseW92Z3ptTmhVQTlvYlgyV3E5N1JpaDIvUlNSb3krY2dNNkxZZFh5ZE9wT1hDeThzYTljWG40VEphZkkrSHllUHI1MWYrRGtVdm1aZUp4cXh6MTFwak1LNjF6aFFOOUZ4cjVBcE4yTmFiejk3OWRqbGpwck1mQysxU05UU2tDRnZNaUQ5czh6UldETWYrYlFBQUFBQkpSVTVFcmtKZ2dnPT0iLz4KCTwvZGVmcz4KCTxzdHlsZT4KCQl0c3BhbiB7IHdoaXRlLXNwYWNlOnByZSB9Cgk8L3N0eWxlPgoJPHVzZSBpZD0iQmFja2dyb3VuZCIgaHJlZj0iI2ltZzEiIHg9IjEiIHk9IjEiIC8+Cjwvc3ZnPg==",
+                icon_width: "20",
+                label: "Tests",
+                label_color: "555",
+                status,
+                status_color: statusColor,
+                path: "tests.svg"
+              };
+
+              const result = await github.rest.repos.createDispatchEvent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                event_type: "badge-update",
+                client_payload: payload
+              });
+              console.log(result);
+            } catch(error) {
+              console.error(error);
+              core.setFailed(error);
+            }
+
+  release:
+    name: Build and release
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: (github.event_name == 'schedule' && always()) || github.event_name != 'schedule'
+    permissions:
+      contents: write
       packages: write
+      actions: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
@@ -59,34 +144,7 @@ jobs:
         run: |
           echo "IMAGE_LATEST_VERSION=$(task docker:image_latest_version)" >> $GITHUB_ENV
           echo "DOCKER_TAG=$(task docker:docker_tag)" >> $GITHUB_ENV
-
-      - name: Build single image
-        uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc # ratchet:docker/build-push-action@v6
-        with:
-          push: false
-          file: Dockerfile
-          context: .
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          load: true
-          tags: ${{ env.IMAGE_LATEST_VERSION }}
-          build-args: |
-            AUTHOR=${{ github.actor }}
-            DOCKER_IMAGE_LATEST_VERSION=${{ env.IMAGE_LATEST_VERSION }}
-            DOCKER_TAG=${{ env.DOCKER_TAG }}
-            GIT_REPO_HTTP_URL=${{ github.server_url }}/${{ github.repository }}
-            GIT_SHORT_SHA=${{ github.sha }}
-
-      - name: Test image
-        id: test
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: |
-          task docker:test
-          task docker:security
-
-      - name: Get major version
-        run: echo "MAJOR_VERSION=$(task docker:docker_tag | cut -d. -f1)" >> $GITHUB_ENV
+          echo "MAJOR_VERSION=$(task docker:docker_tag | cut -d. -f1)" >> $GITHUB_ENV
 
       - name: Push Image
         id: release
