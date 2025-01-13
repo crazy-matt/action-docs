@@ -100,7 +100,7 @@ jobs:
     name: conclusion
     runs-on: ubuntu-latest
     needs: [secrets_scan, static_analysis_trivy, static_analysis_semgrep]
-    if: always()
+    if: always() && github.actor != 'dependabot[bot]'
     permissions:
       contents: write
     steps:
