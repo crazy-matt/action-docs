@@ -39,6 +39,7 @@ jobs:
       - uses: wagoid/commitlint-github-action@0184f5a228ee06430bb9e67d65f73a1a6767496a # ratchet:wagoid/commitlint-github-action@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          configFile: .github/.linters/commitlintrc.yaml
 
   pin_actions_and_docker_images:
     name: Pin Actions and Docker images

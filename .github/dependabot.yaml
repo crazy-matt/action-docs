@@ -28,7 +28,7 @@ updates:
       time: '12:00'
       timezone: 'Europe/London'
     commit-message:
-      prefix: chore(docker)
+      prefix: chore(deps)
     labels: [docker]
     open-pull-requests-limit: 3
     groups:
