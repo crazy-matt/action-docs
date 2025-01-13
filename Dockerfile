@@ -22,7 +22,7 @@ LABEL org.opencontainers.image.title="Dockerized action-docs" \
     org.opencontainers.image.vendor="${AUTHOR}" \
     org.opencontainers.image.revision="${GIT_SHORT_SHA}" \
     org.opencontainers.image.version="${DOCKER_TAG}" \
-    org.opencontainers.image.cmd="docker run -t --rm -v \$PWD:/work ${DOCKER_IMAGE_LATEST_VERSION} <action-docs command>"
+    org.opencontainers.image.cmd="docker run --rm -v \$PWD:/work ${DOCKER_IMAGE_LATEST_VERSION} <action-docs command>"
 
 WORKDIR /work
 

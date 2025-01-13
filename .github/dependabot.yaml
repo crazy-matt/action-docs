@@ -9,7 +9,7 @@ updates:
       time: '12:00'
     timezone: 'Europe/London'
     commit-message:
-      prefix: chore
+      prefix: chore(ci)
     labels: [actions]
     open-pull-requests-limit: 3
     groups:
@@ -28,7 +28,7 @@ updates:
       time: '12:00'
     timezone: 'Europe/London'
     commit-message:
-      prefix: chore
+      prefix: chore(docker)
     labels: [docker]
     open-pull-requests-limit: 3
     groups:

@@ -11,13 +11,13 @@ A dockerized [action-docs](https://github.com/npalm/action-docs).
 ### Generate an action documentation
 
 ```shell
-docker run -t --rm -v $PWD:/work ghcr.io/crazy-matt/action-docs:latest --update-readme
+docker run --rm -v $PWD:/work ghcr.io/crazy-matt/action-docs:latest --update-readme
 ```
 
 ### Help
 
 ```shell
-docker run -t --rm -v $PWD:/work ghcr.io/crazy-matt/action-docs:latest --help
+docker run --rm -v $PWD:/work ghcr.io/crazy-matt/action-docs:latest --help
 ```
 
 > Check-out the `action-docs` documentation [here](https://github.com/npalm/action-docs#readme).
