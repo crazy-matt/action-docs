@@ -3,9 +3,10 @@
 # https://trivy.dev/latest/docs/references/configuration/config-file/
 ---
 exit-code: 1
-timeout: 5m0s
+timeout: 1m0s
 
 pkg:
+  include-dev-deps: true
   types:
     - os
     - library

@@ -1,0 +1,64 @@
+name: Integration
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  secrets_scan:
+    name: Secrets Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    if: github.actor != 'dependabot[bot]'
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan
+        uses: gitleaks/gitleaks-action@83373cf2f8c4db6e24b41c1a9b086bb9619e9cd3 # ratchet:gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: ${{ github.workspace }}/.security/gitleaks.toml
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false # sarif upload, would need 'security-events: write'
+          GITLEAKS_ENABLE_SUMMARY: true
+          GITLEAKS_VERSION: 8.22.0
+
+  vulnerability_scan:
+    name: Vulnerability Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    if: github.actor != 'dependabot[bot]'
+    permissions:
+      contents: write
+      actions: write
+      security-events: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+
+      - name: Scan pkg manifests/github actions
+        id: trivy_scan
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # ratchet:aquasecurity/trivy-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          scan-type: fs
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
+          format: github
+          output: dependency-results.sbom.json
+          trivy-config: .security/trivy.yaml
+
+      - name: Upload trivy report
+        uses: actions/upload-artifact@v4
+        if: always() && hashFiles('dependency-results.sbom.json') != ''
+        with:
+          name: trivy-sbom-report
+          path: dependency-results.sbom.json

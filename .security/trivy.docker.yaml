@@ -1,0 +1,22 @@
+# References:
+# https://github.com/aquasecurity/trivy-action?tab=readme-ov-file#inputs
+# https://trivy.dev/latest/docs/references/configuration/config-file/
+---
+exit-code: 1
+timeout: 1m0s
+
+pkg:
+  types:
+    - os
+    - library
+
+scan:
+  scanners:
+    - vuln
+
+severity:
+  - CRITICAL
+  - HIGH
+
+vulnerability:
+  ignore-unfixed: true

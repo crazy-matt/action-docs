@@ -8,12 +8,14 @@ jobs:
   badge_file_updater:
     name: Update Badge ${{ github.event.client_payload.label }}
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           token: ${{ secrets.BOT_TOKEN }}
           fetch-depth: 0
+
       - name: Prepare badges branch
         run: |
           if git ls-remote --exit-code origin badges; then
@@ -22,6 +24,7 @@ jobs:
             git switch --orphan badges
             [[ -z "$(git ls-files)" ]] || git rm -rf .
           fi
+
       - name: Create badge
         uses: emibcn/badge-action@808173dd03e2f30c980d03ee49e181626088eee8 # ratchet:emibcn/badge-action@v2
         with:
@@ -32,6 +35,7 @@ jobs:
           status: ${{ github.event.client_payload.status }}
           color: ${{ github.event.client_payload.status_color }}
           path: ${{ github.event.client_payload.path }}
+
       - name: Push changes
         run: |
           if [[ -n $(git status --porcelain) ]]; then
@@ -42,7 +46,7 @@ jobs:
             git config commit.gpgsign true
             git status --porcelain
             git add --all
-            git commit -m "ci: update ${{ github.event.client_payload.label }} badge"
+            git commit -m "ci: update ${{ github.event.client_payload.label }} badge [skip ci]"
             git push origin badges --force
           else
             echo "No changes to commit."

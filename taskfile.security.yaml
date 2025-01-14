@@ -12,13 +12,13 @@ tasks:
       - cmd: if [ -f .task_errors ]; then exit 1; fi
 
   secrets:
-    desc: Scan for secrets with gitleaks (https://github.com/zricethezav/gitleaks)
+    desc: Scan secrets with gitleaks (https://github.com/zricethezav/gitleaks)
     cmds:
       - echo "📒  {{.TASK}}"
       - gitleaks detect --no-git --exit-code 1 -v --source . --config .security/gitleaks.toml --redact
 
   filesystem:
-    desc: Scan for filesystem vulnerabilities with Trivy (https://github.com/aquasecurity/trivy-action?tab=readme-ov-file#trivy-config-file)
+    desc: Scan vulnerabilities with Trivy (https://github.com/aquasecurity/trivy-action?tab=readme-ov-file#trivy-config-file)
     cmds:
       - echo "📒  {{.TASK}}"
       - |

@@ -133,7 +133,7 @@ tasks:
     cmds:
       - echo "📒  {{.TASK}}"
       - |
-        trivy image --config .security/trivy.yaml \
+        trivy image --config .security/trivy.docker.yaml \
           --ignorefile .security/trivyignore \
           --format table \
           {{.DOCKER_IMAGE_LATEST_VERSION}}

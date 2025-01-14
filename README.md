@@ -1,6 +1,6 @@
 # action-docs
 
-[![Vulnerabilities](https://github.com/crazy-matt/action-docs/blob/badges/vulnerabilities.svg)](https://github.com/crazy-matt/action-docs/actions/workflows/ci.yaml)
+[![Integration](https://github.com/crazy-matt/action-docs/actions/workflows/integration.yaml/badge.svg)](https://github.com/crazy-matt/action-docs/actions/workflows/integration.yaml)
 [![Image Tests](https://github.com/crazy-matt/action-docs/blob/badges/tests.svg)](https://github.com/crazy-matt/action-docs/actions/workflows/release.yaml)
 [![Release](https://github.com/crazy-matt/action-docs/blob/badges/release.svg)](https://github.com/crazy-matt/action-docs/actions/workflows/release.yaml)
 
