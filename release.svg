@@ -1,20 +1,20 @@
-<svg width="129.6" height="20" viewBox="0 0 1296 200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="Release: standby">
-  <title>Release: standby</title>
+<svg width="127.5" height="20" viewBox="0 0 1275 200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="Release: passing">
+  <title>Release: passing</title>
   <linearGradient id="a" x2="0" y2="100%">
     <stop offset="0" stop-opacity=".1" stop-color="#EEE"/>
     <stop offset="1" stop-opacity=".1"/>
   </linearGradient>
-  <mask id="m"><rect width="1296" height="200" rx="30" fill="#FFF"/></mask>
+  <mask id="m"><rect width="1275" height="200" rx="30" fill="#FFF"/></mask>
   <g mask="url(#m)">
     <rect width="757" height="200" fill="#555"/>
-    <rect width="539" height="200" fill="#999" x="757"/>
-    <rect width="1296" height="200" fill="url(#a)"/>
+    <rect width="518" height="200" fill="#3C1" x="757"/>
+    <rect width="1275" height="200" fill="url(#a)"/>
   </g>
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
     <text x="290" y="148" textLength="427" fill="#000" opacity="0.25">Release</text>
     <text x="280" y="138" textLength="427">Release</text>
-    <text x="812" y="148" textLength="439" fill="#000" opacity="0.25">standby</text>
-    <text x="802" y="138" textLength="439">standby</text>
+    <text x="812" y="148" textLength="418" fill="#000" opacity="0.25">passing</text>
+    <text x="802" y="138" textLength="418">passing</text>
   </g>
   <image x="40" y="35" width="200" height="130" xlink:href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDIxLjAuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiCgkgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTAyNCAxMDI0OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+Cgkuc3Qwe2ZpbGw6IzAwOTFFMjt9Cgkuc3Qxe2ZpbGw6I0ZGRkZGRjt9Cjwvc3R5bGU+CjxnIGlkPSJHdWlkZXMiPgo8L2c+CjxnIGlkPSJJY29uIj4KCTxjaXJjbGUgY2xhc3M9InN0MCIgY3g9IjUxMiIgY3k9IjUxMiIgcj0iNTEyIi8+Cgk8cGF0aCBjbGFzcz0ic3QxIiBkPSJNODI3LjMsNDYxLjVjLTEuNi0xLjMtMTYuMS0xMi4yLTQ2LjctMTIuMmMtOC4xLDAtMTYuMiwwLjYtMjQuMiwyLjFjLTUuOS00MC43LTM5LjUtNjAuNS00MS02MS40bC04LjItNC44CgkJbC01LjQsNy44Yy02LjgsMTAuNS0xMS43LDIyLTE0LjYsMzQuMmMtNS41LDIzLjItMi4yLDQ1LDkuNiw2My42Yy0xNC4yLDcuOS0zNy4xLDkuOS00MS43LDEwSDI3N2MtOS45LDAtMTcuOSw4LTE3LjksMTcuOQoJCWMtMC40LDMzLjEsNS4yLDY2LDE2LjUsOTcuMWMxMywzNC4yLDMyLjQsNTkuMyw1Ny42LDc0LjdjMjguMiwxNy4zLDc0LjEsMjcuMiwxMjYuMiwyNy4yYzIzLjUsMC4xLDQ3LTIuMSw3MC4xLTYuNAoJCWMzMi4xLTUuOSw2My0xNy4xLDkxLjQtMzMuMmMyMy40LTEzLjYsNDQuNS0zMC44LDYyLjQtNTEuMWMyOS45LTMzLjksNDcuOC03MS43LDYxLjEtMTA1LjJoNS4zYzMyLjgsMCw1My0xMy4xLDY0LjEtMjQuMQoJCWM3LjQtNywxMy4yLTE1LjUsMTYuOS0yNWwyLjMtNi45TDgyNy4zLDQ2MS41eiBNMzEyLDQ4OS45aDUwLjdjMi40LDAsNC40LTIsNC40LTQuNHYtNDUuMWMwLTIuNC0yLTQuNC00LjQtNC41SDMxMgoJCWMtMi40LDAtNC40LDItNC40LDQuNHY0NS4yQzMwNy42LDQ4OCwzMDkuNiw0ODkuOSwzMTIsNDg5LjkgTTM4MS45LDQ4OS45aDUwLjdjMi40LDAsNC40LTIsNC40LTQuNHYtNDUuMWMwLTIuNC0yLTQuNC00LjQtNC41CgkJaC01MC43Yy0yLjUsMC00LjUsMi00LjUsNC41djQ1LjFDMzc3LjQsNDg4LDM3OS40LDQ4OS45LDM4MS45LDQ4OS45IE00NTIuNyw0OTBoNTAuN2MyLjQsMCw0LjQtMiw0LjQtNC40di00NS4xCgkJYzAtMi40LTItNC40LTQuNC00LjVoLTUwLjdjLTIuNCwwLTQuNCwyLTQuNCw0LjR2NDUuMkM0NDguMyw0ODgsNDUwLjMsNDg5LjksNDUyLjcsNDkwIE01MjIuOCw0OTBoNTAuN2MyLjQsMCw0LjQtMiw0LjUtNC40di00NS4xCgkJYzAtMi41LTItNC41LTQuNS00LjVoLTUwLjdjLTIuNCwwLTQuNCwyLTQuNCw0LjR2NDUuMkM1MTguNCw0ODgsNTIwLjMsNDkwLDUyMi44LDQ5MCBNMzgxLjgsNDI1aDUwLjdjMi40LDAsNC40LTIsNC40LTQuNXYtNDUuMQoJCWMwLTIuNC0yLTQuNC00LjQtNC40aC01MC43Yy0yLjUsMC00LjQsMi00LjUsNC40djQ1LjFDMzc3LjQsNDIzLDM3OS40LDQyNSwzODEuOCw0MjUgTTQ1Mi43LDQyNWg1MC43YzIuNCwwLDQuNC0yLDQuNC00LjV2LTQ1LjEKCQljMC0yLjQtMi00LjQtNC40LTQuNGgtNTAuN2MtMi40LDAtNC40LDItNC40LDQuNHY0NS4xQzQ0OC4zLDQyMyw0NTAuMyw0MjUsNDUyLjcsNDI1IE01MjIuOCw0MjVoNTAuN2MyLjUsMCw0LjQtMiw0LjUtNC41di00NS4xCgkJYzAtMi41LTItNC40LTQuNS00LjRoLTUwLjdjLTIuNCwwLTQuNCwyLTQuNCw0LjR2NDUuMUM1MTguNCw0MjMsNTIwLjMsNDI1LDUyMi44LDQyNSBNNTIyLjgsMzYwLjFoNTAuN2MyLjUsMCw0LjUtMiw0LjUtNC41di00NS4yCgkJYzAtMi40LTItNC40LTQuNS00LjRoLTUwLjdjLTIuNCwwLTQuNCwyLTQuNCw0LjR2NDUuMkM1MTguNCwzNTguMSw1MjAuMywzNjAuMSw1MjIuOCwzNjAuMSBNNTkzLjQsNDkwaDUwLjdjMi40LDAsNC40LTIsNC40LTQuNAoJCXYtNDUuMWMwLTIuNS0yLTQuNC00LjQtNC41aC01MC43Yy0yLjQsMC00LjQsMi00LjQsNC40djQ1LjJDNTg5LDQ4OCw1OTEsNDkwLDU5My40LDQ5MCIvPgo8L2c+Cjwvc3ZnPgo="/>
 </svg>
