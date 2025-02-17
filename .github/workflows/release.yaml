@@ -88,7 +88,7 @@ jobs:
           trivy-config: .security/trivy.docker.yaml
 
       - name: Upload trivy report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # ratchet:actions/upload-artifact@v4
         if: always() && hashFiles('dependency-results.sbom.json') != ''
         with:
           name: trivy-sbom-report
@@ -243,7 +243,7 @@ jobs:
             }
 
       - name: Cleanup registry
-        uses: actions/delete-package-versions@v5
+        uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # ratchet:actions/delete-package-versions@v5
         if: steps.check_release_need.outputs.needed == 'true'
         with:
           package-name: ${{ github.event.repository.name }}
