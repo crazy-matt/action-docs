@@ -141,7 +141,7 @@ jobs:
     name: Release image
     runs-on: ubuntu-latest
     needs: [test]
-    timeout-minutes: 1
+    timeout-minutes: 2
     if: (github.event_name == 'schedule' && always()) || github.event_name != 'schedule'
     permissions:
       contents: write
@@ -154,23 +154,24 @@ jobs:
       - uses: jdx/mise-action@5083fe46898c414b2475087cc79da59e7da859e8 # ratchet:jdx/mise-action@v2
 
       - name: Check if release needed
+        id: check_release_need
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FORCE_RELEASE: ${{ github.event.inputs.force_release }}
         run: |
           task docker:resolve_vars
-          [[ "$(task docker:release_needed)" == 'true' ]] || gh api \
-            -X POST \
-            -H "Accept: application/vnd.github+json" \
-            "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/cancel"
+          [[ "$(task docker:release_needed)" != 'true' ]] || echo "needed=true" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU # for multi-platform build
+        if: steps.check_release_need.outputs.needed == 'true'
         uses: docker/setup-qemu-action@4574d27a4764455b42196d70a065bc6853246a25 # ratchet:docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
+        if: steps.check_release_need.outputs.needed == 'true'
         uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # ratchet:docker/setup-buildx-action@v3
 
       - name: Log in to GHCR
+        if: steps.check_release_need.outputs.needed == 'true'
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # ratchet:docker/login-action@v3
         with:
           registry: ghcr.io
@@ -178,15 +179,19 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Fetch image metadata
+        if: steps.check_release_need.outputs.needed == 'true'
         run: |
           echo "IMAGE_LATEST_VERSION=$(task docker:image_latest_version)" >> $GITHUB_ENV
           echo "DOCKER_TAG=$(task docker:docker_tag)" >> $GITHUB_ENV
           echo "MAJOR_VERSION=$(task docker:docker_tag | cut -d. -f1)" >> $GITHUB_ENV
 
       - name: Push Image
+        if: steps.check_release_need.outputs.needed == 'true'
         id: release
         uses: docker/build-push-action@ca877d9245402d1537745e0e356eab47c3520991 # ratchet:docker/build-push-action@v6
         with:
+          # provenance trick to get rid off the unknown/unknown architecture listed on GHCR UI (bug see https://github.com/orgs/community/discussions/45969)
+          provenance: false
           push: true
           file: Dockerfile
           context: .
@@ -206,7 +211,7 @@ jobs:
             GIT_SHORT_SHA=${{ github.sha }}
 
       - name: Update release badge
-        if: always()
+        if: steps.check_release_need.outputs.needed == 'true'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # ratchet:actions/github-script@v7
         with:
           script: |
@@ -236,3 +241,12 @@ jobs:
               console.error(error);
               core.setFailed(error);
             }
+
+      - name: Cleanup registry
+        uses: actions/delete-package-versions@v5
+        if: steps.check_release_need.outputs.needed == 'true'
+        with:
+          package-name: ${{ github.event.repository.name }}
+          package-type: container
+          min-versions-to-keep: 0
+          delete-only-untagged-versions: true

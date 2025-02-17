@@ -1,4 +1,7 @@
 name: Update Badge
+#
+# Requires 'contents: write' and 'actions: write' permissions for the workflow caller.
+#
 
 on:
   repository_dispatch:
@@ -27,6 +30,7 @@ jobs:
 
       - name: Create badge
         uses: emibcn/badge-action@808173dd03e2f30c980d03ee49e181626088eee8 # ratchet:emibcn/badge-action@v2
+        # Use https://www.svgviewer.dev/svg-to-data-uri to get a data URI
         with:
           icon: ${{ github.event.client_payload.icon }}
           icon-width: ${{ github.event.client_payload.icon_width }}

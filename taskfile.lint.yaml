@@ -7,6 +7,7 @@ tasks:
     desc: Run all linters
     cmds:
       - defer: \rm -f .task_errors
+      - cmd: task lint:actions || touch .task_errors
       - cmd: task lint:markdown || touch .task_errors
       - cmd: task lint:yaml || touch .task_errors
       - cmd: if [ -f .task_errors ]; then exit 1; fi
@@ -21,13 +22,14 @@ tasks:
           -ignore 'property "job_workflow_sha" is not defined in object type' \
           -ignore 'unknown Webhook event "merge_group"' \
           -ignore 'label "macos-14" is unknown' \
+          -ignore 'property "dependabot-metadata" is not defined in object type' \
           .github/workflows/*
 
   markdown:
     desc: Lint Markdown files with markdownlint-cli2 (compatible with VScode plugin)
     cmds:
       - echo "📒  {{.TASK}}"
-      - find . \( -path "./.history" -o -path "./tests" \) -prune -o \( -name "*.md" \) -print -exec markdownlint-cli2 --config .linters/.markdownlint-cli2.yaml {} +
+      - markdownlint-cli2 --config .linters/.markdownlint-cli2.yaml .
 
   yaml:
     desc: Lint yaml files (https://github.com/adrienverge/yamllint)

@@ -5,6 +5,7 @@ ignore: |
   **.github/workflows/**
   **.history/**
   **tests/libs/**
+  **yarn**
 rules:
   line-length: disable
   indentation:

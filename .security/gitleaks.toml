@@ -13,8 +13,9 @@ title = "gitleaks config"
 
 [allowlist]
 description = "global allow lists"
+regexTarget = "line"
 regexes = [
-    '''(.*?)# scan:ignore''',
+    '''(.*?)\s{0,3}#\s*scan:ignore''',
     '''(?i)^true|false|null$''',
     '''^(?i:a+|b+|c+|d+|e+|f+|g+|h+|i+|j+|k+|l+|m+|n+|o+|p+|q+|r+|s+|t+|u+|v+|w+|x+|y+|z+|\*+|\.+)$''',
     '''^\$(\d+|{\d+})$''',
@@ -23,7 +24,6 @@ regexes = [
     '''^\{\{[ \t]*[\w ().|]+[ \t]*}}$''',
     '''^\$\{\{[ \t]*((env|github|secrets|vars)(\.[A-Za-z]\w+)+[\w "'&./=|]*)[ \t]*}}$''',
     '''^%([A-Z_]+|[a-z_]+)%$''',
-    '''^%[+\-# 0]?[bcdeEfFgGoOpqstTUvxX]$''',
     '''^\{\d{0,2}}$''',
     '''^@([A-Z_]+|[a-z_]+)@$''',
 ]
@@ -79,6 +79,7 @@ regexes = [
     '''alice@gmail.com''',
     '''joe@gmail.com''',
     '''(?i).*example.*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}.*$''',
+    '''[a-zA-Z0-9._%+-]+@developer.gserviceaccount.com''',
 ]
 
 [[rules]]
