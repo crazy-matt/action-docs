@@ -241,12 +241,3 @@ jobs:
               console.error(error);
               core.setFailed(error);
             }
-
-      - name: Cleanup registry
-        uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # ratchet:actions/delete-package-versions@v5
-        if: steps.check_release_need.outputs.needed == 'true'
-        with:
-          package-name: ${{ github.event.repository.name }}
-          package-type: container
-          min-versions-to-keep: 0
-          delete-only-untagged-versions: true

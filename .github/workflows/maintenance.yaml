@@ -11,6 +11,7 @@ on:
         description: Job to run
         type: choice
         options:
+          - Housekeeping
           - Lint commit messages
           - Pin Actions and Docker images
         required: false
@@ -21,6 +22,26 @@ on:
     branches: [main]
 
 jobs:
+  housekeeping:
+    name: Housekeeping
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    if: |
+      github.event.inputs.job == 'Housekeeping' ||
+      github.event_name == 'push' ||
+      github.event_name == 'pull_request'
+    permissions:
+      packages: write
+    steps:
+      - name: Cleanup registry
+        uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # ratchet:actions/delete-package-versions@v5
+        with:
+          package-name: ${{ github.event.repository.name }}
+          package-type: container
+          min-versions-to-keep: 0
+          delete-only-untagged-versions: true
+          ignore-versions: ^(latest|v.*)$
+
   lint_commits:
     # Lint commit messages failing if they're not conventional
     name: Lint commit messages
