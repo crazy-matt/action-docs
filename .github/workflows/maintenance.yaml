@@ -30,8 +30,6 @@ jobs:
       github.event.inputs.job == 'Housekeeping' ||
       github.event_name == 'push' ||
       github.event_name == 'pull_request'
-    permissions:
-      packages: admin
     steps:
       - name: Cleanup registry
         uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # ratchet:actions/delete-package-versions@v5
