@@ -63,7 +63,7 @@ jobs:
 
       - name: Build single image
         id: build
-        uses: docker/build-push-action@ca877d9245402d1537745e0e356eab47c3520991 # ratchet:docker/build-push-action@v6
+        uses: docker/build-push-action@0adf9959216b96bec444f325f1e493d4aa344497 # ratchet:docker/build-push-action@v6
         with:
           push: false
           file: Dockerfile
@@ -188,7 +188,7 @@ jobs:
       - name: Push Image
         if: steps.check_release_need.outputs.needed == 'true'
         id: release
-        uses: docker/build-push-action@ca877d9245402d1537745e0e356eab47c3520991 # ratchet:docker/build-push-action@v6
+        uses: docker/build-push-action@0adf9959216b96bec444f325f1e493d4aa344497 # ratchet:docker/build-push-action@v6
         with:
           # provenance trick to get rid off the unknown/unknown architecture listed on GHCR UI (bug see https://github.com/orgs/community/discussions/45969)
           provenance: false
