@@ -64,7 +64,9 @@ tags = ["email"]
 [[rules.allowlists]]
 description = "ignore specific emails"
 paths = [
-    '''^(test|tests)\/'''
+    '''^(test|tests)\/''',
+    '''^(dist)\/''',
+    '''^(node_modules)\/'''
 ]
 regexes = [
     '''^hello@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$''',

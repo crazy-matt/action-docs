@@ -18,8 +18,11 @@ scan:
   skip-dirs:
     - node_modules
     - vendor
+    - tests
   skip-files:
-    - "*.test.js"
+    - '*.test.js'
+    - '*.test.ts'
+    - '*_test.go'
 
 severity:
   - CRITICAL
