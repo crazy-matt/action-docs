@@ -28,7 +28,7 @@ jobs:
       github.event.forced == false && github.actor != 'dependabot[bot]' &&
       (github.event.inputs.job == 'Lint commit messages' ||
       github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'release-please')))
+      github.event_name == 'pull_request')
     permissions:
       contents: read
       pull-requests: read
@@ -48,7 +48,7 @@ jobs:
       github.actor != 'dependabot[bot]' &&
       (github.event.inputs.job == 'Pin Actions and Docker images' ||
       github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'release-please')))
+      github.event_name == 'pull_request')
     permissions:
       contents: write
       pull-requests: read
