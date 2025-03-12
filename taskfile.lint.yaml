@@ -23,6 +23,7 @@ tasks:
           -ignore 'unknown Webhook event "merge_group"' \
           -ignore 'label "macos-14" is unknown' \
           -ignore 'property "dependabot-metadata" is not defined in object type' \
+          -ignore 'property "release" is not defined in object type' \
           .github/workflows/*
 
   markdown:
