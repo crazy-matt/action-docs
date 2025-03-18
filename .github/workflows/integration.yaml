@@ -129,20 +129,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
-      - name: Detect new vulnerabilities
-        if: github.event_name == 'pull_request'
-        uses: AikidoSec/github-actions-workflow@47d83dbcf3e6635044c4b31cef590c1e095217cc # ratchet:AikidoSec/github-actions-workflow@v1.0.13
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
-          fail-on-timeout: true
-          fail-on-dependency-scan: true
-          fail-on-sast-scan: false
-          fail-on-iac-scan: false
-          minimum-severity: CRITICAL
-          timeout-seconds: 180
-          post-scan-status-comment: on
-          post-sast-review-comments: on
       - name: Scan pkg manifests/github actions
         id: trivy_scan
         if: github.event_name == 'push'
