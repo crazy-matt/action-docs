@@ -34,7 +34,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
 
-      - uses: jdx/mise-action@c94f0bf9e520b150e34c017db785461f7e71c5fb # ratchet:jdx/mise-action@v2
+      - uses: jdx/mise-action@13abe502c30c1559a5c37dff303831bab82c9402 # ratchet:jdx/mise-action@v2
 
       - name: Lint docker image
         id: lint_docker
@@ -63,7 +63,7 @@ jobs:
 
       - name: Build single image
         id: build
-        uses: docker/build-push-action@1dc73863535b631f98b2378be8619f83b136f4a0 # ratchet:docker/build-push-action@v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # ratchet:docker/build-push-action@v6
         with:
           push: false
           file: Dockerfile
@@ -151,7 +151,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
 
-      - uses: jdx/mise-action@c94f0bf9e520b150e34c017db785461f7e71c5fb # ratchet:jdx/mise-action@v2
+      - uses: jdx/mise-action@13abe502c30c1559a5c37dff303831bab82c9402 # ratchet:jdx/mise-action@v2
 
       - name: Check if release needed
         id: check_release_need
@@ -188,7 +188,7 @@ jobs:
       - name: Push Image
         if: steps.check_release_need.outputs.needed == 'true'
         id: release
-        uses: docker/build-push-action@1dc73863535b631f98b2378be8619f83b136f4a0 # ratchet:docker/build-push-action@v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # ratchet:docker/build-push-action@v6
         with:
           # provenance trick to get rid off the unknown/unknown architecture listed on GHCR UI (bug see https://github.com/orgs/community/discussions/45969)
           provenance: false
