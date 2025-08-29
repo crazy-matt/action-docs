@@ -34,7 +34,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # ratchet:actions/checkout@v4
 
-      - uses: jdx/mise-action@ca0c5fc9c8a8386dae8ba5d37608a083a307991c # ratchet:jdx/mise-action@v2
+      - uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # ratchet:jdx/mise-action@v2
 
       - name: Lint docker image
         id: lint_docker
@@ -76,7 +76,7 @@ jobs:
 
       - name: Scan image
         id: trivy_scan
-        uses: aquasecurity/trivy-action@dc5a429b52fcf669ce959baa2c2dd26090d2a6c4 # ratchet:aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@f9424c10c36e288d5fa79bd3dfd1aeb2d6eae808 # ratchet:aquasecurity/trivy-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -151,7 +151,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # ratchet:actions/checkout@v4
 
-      - uses: jdx/mise-action@ca0c5fc9c8a8386dae8ba5d37608a083a307991c # ratchet:jdx/mise-action@v2
+      - uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # ratchet:jdx/mise-action@v2
 
       - name: Check if release needed
         id: check_release_need
