@@ -76,7 +76,7 @@ jobs:
 
       - name: Scan image
         id: trivy_scan
-        uses: aquasecurity/trivy-action@c1824fd6edce30d7ab345a9989de00bbd46ef284 # ratchet:aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@e368e328979b113139d6f9068e03accaed98a518 # ratchet:aquasecurity/trivy-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
